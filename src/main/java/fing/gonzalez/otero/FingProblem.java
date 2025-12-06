@@ -6,7 +6,6 @@ import org.uma.jmetal.problem.permutationproblem.impl.AbstractIntegerPermutation
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 
 public class FingProblem extends AbstractIntegerPermutationProblem {
-	/* Extra variables for our problem */
 	private int numberOfVehicles;
 	
 	public FingProblem (int vehicles, int variables) {
