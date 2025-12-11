@@ -9,11 +9,11 @@ import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
 
 import java.util.List;
 
-public class FingAlgorithm {
+public class FingMain {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				0/* variables, |R| = 0         */, 
-				43/* vehicles,  V  = 43|R|/154 */
+				197 /* variables,  V + |R| = ?   */, 
+				43  /* vehicles,  V = 43|R|/154 */
 		);
 		FingCrossover crossover = new FingCrossover(0.9);
 		FingMutation mutation = new FingMutation(0.2);
