@@ -7,6 +7,8 @@ import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 
 public class FingProblem extends AbstractIntegerPermutationProblem {
 	private int numberOfVehicles;
+	private double[][] distances;
+	private double[][] times;
 	
 	public FingProblem (int vehicles, int variables) {
 		setNumberOfConstraints(0);
@@ -14,6 +16,12 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		setNumberOfObjectives(2);
 		setNumberOfVehicles(vehicles);
 		setName("FingProblem");
+		try {
+			distances = MatrixLoader.load("/distances.csv");
+			times = MatrixLoader.load("/times.csv");
+		} catch (Exception e) {
+			throw new RuntimeException("Error cargando matrices", e);
+		}
 	}
 	
 	/* Setters */
@@ -57,20 +65,22 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		solution.setObjective(1, time);
 	}
 	
-	// funcion que devluevle el coste operativo de ir de una ubicacion a otra, si es la misma devuelve 0
-	// y devuelve tambien el tiempo de ir de una ubicacion a otra
-	// devuelve (costo, tiempo)
 	public Pair<Double, Double> obtainCostAndTime(int from, int to) {
-		// TODO
 		if (from == to) {
 			return Pair.of(0.0, 0.0);
 		}
-		return Pair.of(0.0, 0.0); // esto no es, aca deberia de ir obtener la distancia de una a otra, y calcularle el gasto de combustible y el tiempo medio
+		from = MatrixLoader.matrixIndex(from, getNumberOfVehicles());
+		to = MatrixLoader.matrixIndex(to, getNumberOfVehicles());
+		return Pair.of(distances[from][to]*(10.4), times[from][to]*urgency(to));
 	}
 	
-	// devuelve una constante para cada tipo de urgencia
 	public int urgency(int id) {
-		// TODO
-		return 1;
+		if (id < 47) {
+			return 7;
+		}
+		if (id < 113) {
+			return 5;
+		}
+		return 3;
 	}
 }
