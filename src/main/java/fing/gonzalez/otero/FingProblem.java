@@ -72,8 +72,8 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 			}
 		}
 		time = time / (getNumberOfVariables() - getNumberOfVehicles());
-		solution.setObjective(0, cost);
-		solution.setObjective(1, time);
+		solution.setObjective(0, cost); // pesos, gasto de combustible
+		solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
 	}
 	
 	public double obtainCost(int from, int to) {
