@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Random;
 import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSolution;
 
+import fing.gonzalez.otero.utils.MatrixLoader;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.uma.jmetal.problem.permutationproblem.impl.AbstractIntegerPermutationProblem;

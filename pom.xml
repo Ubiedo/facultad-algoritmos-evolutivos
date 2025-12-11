@@ -7,11 +7,6 @@
   <name>Optimizacion Ruta de Distribucion - Algoritmos Evolutivos</name>
   <description>Proyecto de Curso Algoritmos Evolutivos 2025; Federico Gonzalez, Juan Otero.</description>
   <dependencies>
-  	<dependency>
-  		<groupId>org.uma.jmetal</groupId>
-  		<artifactId>jmetal</artifactId>
-		<version>5.10</version>
-  	</dependency>
 	<dependency>
 		<groupId>org.uma.jmetal</groupId>
 		<artifactId>jmetal-algorithm</artifactId>

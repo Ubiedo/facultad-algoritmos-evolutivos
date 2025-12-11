@@ -1,4 +1,4 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
