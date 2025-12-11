@@ -22,13 +22,19 @@ public class FingMain {
 				new BinaryTournamentSelection<>(
 						new RankingAndCrowdingDistanceComparator<>()
 				);
+		// tiempo de inicio
+		long startTime = System.currentTimeMillis();
 		Algorithm<List<PermutationSolution<Integer>>> algorithm =
-				new NSGAIIBuilder<>(problem, crossover, mutation, 100)
+				new NSGAIIBuilder<>(problem, crossover, mutation, 1000)
 						.setSelectionOperator(selection)
-						.setMaxEvaluations(20000)
+						.setMaxEvaluations(10000000)
 						.build();
 
 		algorithm.run();
+		// tiempo de fin
+	    long endTime = System.currentTimeMillis();
+	    long durationMillis = endTime - startTime; // tiempo en milisegundos
+	    double durationSeconds = durationMillis / 1000.0; // tiempo en segundos
 		List<PermutationSolution<Integer>> population = algorithm.getResult();
 		System.out.println("Soluciones finales:");
 		for (PermutationSolution<Integer> sol : population) {
@@ -37,5 +43,6 @@ public class FingMain {
 			System.out.println("Tiempo = " + sol.getObjective(1));
 			System.out.println("-------------------");
 		}
+		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
 	}
 }

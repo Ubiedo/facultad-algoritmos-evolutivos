@@ -25,11 +25,11 @@ public class FingMutation implements MutationOperator<PermutationSolution<Intege
 		if (random.nextDouble() < mutationProbability) {
 			int size = solution.getVariables().size();
 
-			int i = random.nextInt(size);
-			int j = random.nextInt(size);
+			int i = 1 + random.nextInt(size - 1);
+			int j = 1 + random.nextInt(size - 1);
 
 			while (j == i)
-				j = random.nextInt(size);
+				j = 1 + random.nextInt(size - 1);
 
 			// swap
 			Integer tmp = solution.getVariables().get(i);

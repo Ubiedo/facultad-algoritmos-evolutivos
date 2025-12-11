@@ -18,15 +18,15 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	private double[][] distances;
 	private double[][] times;
 	
-	public FingProblem (int vehicles, int variables) {
+	public FingProblem (int variables, int vehicles) {
 		setNumberOfConstraints(0);
 		setNumberOfVariables(variables);
 		setNumberOfObjectives(2);
 		setNumberOfVehicles(vehicles);
 		setName("FingProblem");
 		try {
-			distances = MatrixLoader.load("/distances.csv");
-			times = MatrixLoader.load("/times.csv");
+			distances = MatrixLoader.load("data/distances.csv");
+			times = MatrixLoader.load("data/times.csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices", e);
 		}
@@ -55,32 +55,43 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		/* gTiempo = ∑(t(r)* u(r))/|R| */
 		double time = 0.0;
 		int fromNode = 0;
+		double accumulatedTime = 0.0;
 		Pair<Double, Double> values;
 		for (int i = 1; i < solution.getLength(); i++) {
 			/* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
 			int thisNode = solution.getVariable(i);
 			if (thisNode < getNumberOfVehicles()) {
-				values = obtainCostAndTime(fromNode, 0);
+				cost += obtainCost(fromNode, 0);
 				fromNode = 0;
+				accumulatedTime = 0;
 			} else {
-				values = obtainCostAndTime(fromNode, thisNode);
-				time += values.getRight() * urgency(thisNode);
+				cost += obtainCost(fromNode, thisNode);
+				accumulatedTime += obtainTime(fromNode, 0, accumulatedTime);
+				time += accumulatedTime*urgency(MatrixLoader.matrixIndex(thisNode, getNumberOfVehicles()));
 				fromNode = thisNode;
 			}
-			cost += values.getLeft();
 		}
 		time = time / (getNumberOfVariables() - getNumberOfVehicles());
 		solution.setObjective(0, cost);
 		solution.setObjective(1, time);
 	}
 	
-	public Pair<Double, Double> obtainCostAndTime(int from, int to) {
+	public double obtainCost(int from, int to) {
 		if (from == to) {
-			return Pair.of(0.0, 0.0);
+			return 0.0;
 		}
 		from = MatrixLoader.matrixIndex(from, getNumberOfVehicles());
 		to = MatrixLoader.matrixIndex(to, getNumberOfVehicles());
-		return Pair.of(distances[from][to]*(10.4), times[from][to]*urgency(to));
+		return distances[from][to]*(0.0104);
+	}
+	
+	public double obtainTime(int from, int to, double accumulatedTime) {
+		if (from == to) {
+			return 0.0;
+		}
+		from = MatrixLoader.matrixIndex(from, getNumberOfVehicles());
+		to = MatrixLoader.matrixIndex(to, getNumberOfVehicles());
+		return accumulatedTime + times[from][to];
 	}
 	
 	public int urgency(int id) {

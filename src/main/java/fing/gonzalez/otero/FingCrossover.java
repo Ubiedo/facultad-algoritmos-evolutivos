@@ -54,7 +54,7 @@ public class FingCrossover implements CrossoverOperator<PermutationSolution<Inte
 		PermutationSolution<Integer> child = (PermutationSolution<Integer>) p1.copy(); // copia plantilla
 
 		// limpiar todo
-		for (int i = 0; i < size; i++)
+		for (int i = 1; i < size; i++)
 			child.getVariables().set(i, null);
 
 		// puntos de corte
@@ -74,6 +74,9 @@ public class FingCrossover implements CrossoverOperator<PermutationSolution<Inte
 			int elem = p2.getVariables().get((j + 1 + k) % size);
 
 			if (!child.getVariables().contains(elem)) {
+				if (idx == 0) {
+					idx = (idx + 1) % size;
+				}
 				child.getVariables().set(idx, elem);
 				idx = (idx + 1) % size;
 			}

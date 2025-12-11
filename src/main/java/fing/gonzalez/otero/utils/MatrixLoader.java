@@ -16,8 +16,11 @@ public class MatrixLoader {
 	
 	public static double[][] load(String resourcePath) throws Exception {
 		List<double[]> filas = new ArrayList<>();
-		try (InputStream is = MatrixLoader.class.getResourceAsStream(resourcePath);
-			 BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+		InputStream is = MatrixLoader.class.getClassLoader().getResourceAsStream(resourcePath);
+		if (is == null) {
+			throw new RuntimeException("No se encontró el recurso: " + resourcePath);
+		}
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 			String linea;
 			while ((linea = br.readLine()) != null) {
 				String[] partes = linea.split(",");
@@ -32,7 +35,7 @@ public class MatrixLoader {
 	}
 	
 	public static int matrixIndex (int id, int vehicles) {
-		if (id-vehicles > 155) {
+		if (id-vehicles > 155 || id-vehicles < 0) {
 			return 0;
 		}
 		return order[id-vehicles];
