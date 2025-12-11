@@ -1,5 +1,11 @@
 package fing.gonzalez.otero;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSolution;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.uma.jmetal.problem.permutationproblem.impl.AbstractIntegerPermutationProblem;
@@ -53,12 +59,13 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 			int thisNode = solution.getVariable(i);
 			if (thisNode < getNumberOfVehicles()) {
 				values = obtainCostAndTime(fromNode, 0);
+				fromNode = 0;
 			} else {
 				values = obtainCostAndTime(fromNode, thisNode);
 				time += values.getRight() * urgency(thisNode);
+				fromNode = thisNode;
 			}
 			cost += values.getLeft();
-			fromNode = thisNode;
 		}
 		time = time / (getNumberOfVariables() - getNumberOfVehicles());
 		solution.setObjective(0, cost);
@@ -83,4 +90,25 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		}
 		return 3;
 	}
+	
+	/* Evitar que se cree una solucion sin vehiculo al comienzo */
+	@Override
+	public PermutationSolution<Integer> createSolution() {
+		List<Integer> perm = new ArrayList<>();
+		for (int i = 0; i < getNumberOfVariables(); i++) {
+			perm.add(i);
+		}
+		Random rand = new Random();
+		int firstValue = rand.nextInt(getNumberOfVehicles());
+		perm.remove((Integer) firstValue);
+		Collections.shuffle(perm);
+		perm.add(0, firstValue);
+		IntegerPermutationSolution solution =
+				new IntegerPermutationSolution(getNumberOfVariables(), getNumberOfObjectives());
+		for (int i = 0; i < getNumberOfVariables(); i++) {
+			solution.setVariable(i, perm.get(i));
+		}
+		return solution;
+	}
+
 }
