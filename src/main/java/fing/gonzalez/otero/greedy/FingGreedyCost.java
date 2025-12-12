@@ -1,4 +1,4 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.greedy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.Random;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSolution;
 
-class FingGreedy {
+class FingGreedyCost {
 	public PermutationSolution<Integer> solution(int variables, int vehicles) {
 		// TODO, esto lo copie de FingProblem, createSolution, falta hacer que cree la solution greedy
 		List<Integer> perm = new ArrayList<>();
