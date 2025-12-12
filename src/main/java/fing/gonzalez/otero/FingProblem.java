@@ -67,7 +67,7 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 			} else {
 				cost += obtainCost(fromNode, thisNode);
 				accumulatedTime += obtainTime(fromNode, 0, accumulatedTime);
-				time += accumulatedTime*urgency(MatrixLoader.matrixIndex(thisNode, getNumberOfVehicles()));
+				time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, getNumberOfVehicles()));
 				fromNode = thisNode;
 			}
 		}
@@ -80,8 +80,8 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		if (from == to) {
 			return 0.0;
 		}
-		from = MatrixLoader.matrixIndex(from, getNumberOfVehicles());
-		to = MatrixLoader.matrixIndex(to, getNumberOfVehicles());
+		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
+		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
 		return distances[from][to]*(0.0104);
 	}
 	
@@ -89,8 +89,8 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		if (from == to) {
 			return 0.0;
 		}
-		from = MatrixLoader.matrixIndex(from, getNumberOfVehicles());
-		to = MatrixLoader.matrixIndex(to, getNumberOfVehicles());
+		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
+		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
 		return accumulatedTime + times[from][to];
 	}
 	

@@ -34,10 +34,21 @@ public class MatrixLoader {
 		return filas.toArray(new double[0][]);
 	}
 	
-	public static int matrixIndex (int id, int vehicles) {
+	public static int toIndex (int id, int vehicles) {
 		if (id-vehicles > 155 || id-vehicles < 0) {
 			return 0;
 		}
 		return order[id-vehicles];
+	}
+	
+	public static int fromIndex(int index, int vehicles) {
+		if (index < 0 || index > 155) {
+			throw new RuntimeException("El indice no esta en el rango de la matriz: " + index);
+		}
+		int id = 0;
+		while (order[id] != index) {
+			id++;
+		}
+		return id + vehicles;
 	}
 }
