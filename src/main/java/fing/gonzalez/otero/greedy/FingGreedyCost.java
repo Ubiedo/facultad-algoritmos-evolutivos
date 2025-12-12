@@ -20,11 +20,11 @@ class FingGreedyCost {
 	private List<List<Integer>> assigned;
 	
 	public FingGreedyCost (int variables, int vehicles) {
-		int [] vehiclesAt = new int[vehicles];
+		vehiclesAt = new int[vehicles];
 		for (int i = 0; i < vehicles; i++) {
 			vehiclesAt[i] = 0;
 		}
-		boolean [] pending = new boolean[variables-vehicles];
+		pending = new boolean[variables-vehicles];
 		for (int i = 0; i < variables-vehicles; i++) {
 			pending[i] = true;
 		}

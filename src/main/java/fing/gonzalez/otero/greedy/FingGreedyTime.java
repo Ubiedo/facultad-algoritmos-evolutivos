@@ -21,12 +21,13 @@ class FingGreedyTime {
 	private List<List<Integer>> assigned;
 	
 	public FingGreedyTime (int variables, int vehicles) {
-		int [] vehiclesAt = new int[vehicles];
+		vehiclesAt = new int[vehicles];
+		vehiclesTimes = new double[vehicles];
 		for (int i = 0; i < vehicles; i++) {
 			vehiclesAt[i] = 0;
 			vehiclesTimes[i] = 0;
 		}
-		boolean [] pending = new boolean[variables-vehicles];
+		pending = new boolean[variables-vehicles];
 		for (int i = 0; i < variables-vehicles; i++) {
 			pending[i] = true;
 		}
@@ -58,8 +59,8 @@ class FingGreedyTime {
 			pending[fastest] = false;
 			assigned.get(vehicle).addLast(fastest);
 			// actualizar datos del vehiculo
+			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[fastest][vehiclesAt[vehicle]];
 			vehiclesAt[vehicle] = fastest;
-			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[pin][vehiclesAt[vehicle]];
 			// actualizar pin
 			pin = fastest;
 			// actualizar keepGoing
