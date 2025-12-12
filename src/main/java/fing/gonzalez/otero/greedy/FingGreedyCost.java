@@ -55,6 +55,8 @@ class FingGreedyCost {
 			// hacer las asignaciones y marcar como asignado
 			pending[closest] = false;
 			assigned.get(vehicle).addLast(closest);
+			// actualizar datos del vehiculo
+			vehiclesAt[vehicle] = closest;
 			// actualizar pin
 			pin = closest;
 			// actualizar keepGoing
