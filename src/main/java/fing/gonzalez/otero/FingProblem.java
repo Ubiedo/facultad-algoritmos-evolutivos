@@ -25,8 +25,8 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		setNumberOfVehicles(vehicles);
 		setName("FingProblem");
 		try {
-			distances = MatrixLoader.load("data/distances.csv");
 			times = MatrixLoader.load("data/times.csv");
+			distances = MatrixLoader.load("data/distances.csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices", e);
 		}
