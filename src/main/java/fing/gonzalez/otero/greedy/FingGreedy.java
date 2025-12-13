@@ -23,27 +23,23 @@ class FingGreedy {
 	private List<List<Integer>> assigned;
 	
 	public FingGreedy (int variables, int vehicles) {
+		numberOfVariables = variables;
+		numberOfVehicles = vehicles;
 		vehiclesAt = new int[vehicles];
 		vehiclesTimes = new double[vehicles];
-		for (int i = 0; i < vehicles; i++) {
-			vehiclesAt[i] = 0;
-			vehiclesTimes[i] = 0;
-		}
 		pending = new boolean[variables-vehicles+1];
-		pending[0] = false;
-		for (int i = 1; i <= variables-vehicles; i++) {
-			pending[i] = true;
-		}
 		assigned = new ArrayList<>();
-		for (int v = 0; v < vehicles; v++) {
-			assigned.add(new ArrayList<>());
-		}
 		try {
 			distances = MatrixLoader.load("data/distances.csv");
 			times = MatrixLoader.load("data/times.csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices en greedy de compromiso", e);
 		}
+	}
+	
+	/* Getters */
+	public List<List<Integer>> getAssignments(){
+		return assigned;
 	}
 	
 	/* Para ver detalles que pueden dar fallo en indice */
@@ -67,8 +63,17 @@ class FingGreedy {
 		return pending.length;
 	}
 	
+	public double [] distancesRow(int row) {
+		return distances[row];
+	}
+	
+	public double [] timesRow(int row) {
+		return times[row];
+	}
+	
 	/* Solciones de los greedy */
 	public PermutationSolution<Integer> compromiseSolution() {
+		clean();
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
@@ -94,13 +99,15 @@ class FingGreedy {
 				keepGoing = keepGoing || pending[i];
 			}
 		}
-		for (int i = 0; i < numberOfVariables; i++) {
+		int position = 0;
+		for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
 			// agrega el vehiculo
-			solution.setVariable(i, i);
+			solution.setVariable(position, vehicleId);
+			position++;
 			// agrega los receptores del vehiculo
-			for (Integer id : assigned.get(i)) {
-				solution.setVariable(i, id);
-				i++;
+			for (Integer id : assigned.get(vehicleId)) {
+				solution.setVariable(position, id+numberOfVehicles);
+				position++;
 			}
 		}
 		evaluate(solution);
@@ -108,6 +115,7 @@ class FingGreedy {
 	}
 	
 	public PermutationSolution<Integer> costSolution() {
+		clean();
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
@@ -132,19 +140,22 @@ class FingGreedy {
 				keepGoing = keepGoing || pending[i];
 			}
 		}
-		for (int i = 0; i < numberOfVariables; i++) {
+		int position = 0;
+		for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
 			// agrega el vehiculo
-			solution.setVariable(i, i);
+			solution.setVariable(position, vehicleId);
+			position++;
 			// agrega los receptores del vehiculo
-			for (Integer id : assigned.get(i)) {
-				solution.setVariable(i, id);
-				i++;
+			for (Integer id : assigned.get(vehicleId)) {
+				solution.setVariable(position, id+numberOfVehicles);
+				position++;
 			}
 		}
 		evaluate(solution);
 		return solution;
 	}
 	public PermutationSolution<Integer> timeSolution() {
+		clean();
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
@@ -170,13 +181,15 @@ class FingGreedy {
 				keepGoing = keepGoing || pending[i];
 			}
 		}
-		for (int i = 0; i < numberOfVariables; i++) {
+		int position = 0;
+		for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
 			// agrega el vehiculo
-			solution.setVariable(i, i);
+			solution.setVariable(position, vehicleId);
+			position++;
 			// agrega los receptores del vehiculo
-			for (Integer id : assigned.get(i)) {
-				solution.setVariable(i, id);
-				i++;
+			for (Integer id : assigned.get(vehicleId)) {
+				solution.setVariable(position, id+numberOfVehicles);
+				position++;
 			}
 		}
 		evaluate(solution);
@@ -193,17 +206,17 @@ class FingGreedy {
 			for (i = 0; i < pending.length; i++) {
 				if (i != pin && pending[i]) {
 					if (!initialized) {
-						min = times[pin][i];
+						min = times[pin+1][i];
 						index = i;
 					} else {
-						if (min > times[pin][i]) {
-							min = times[pin][i];
+						if (min > times[pin+1][i]) {
+							min = times[pin+1][i];
 							index = i;
 						}
 					}
 				}
 			}
-			return MatrixLoader.fromIndex(index, numberOfVehicles);
+			return index;
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException(
 				"Index fuera de rango. pin=" + pin +
@@ -218,11 +231,11 @@ class FingGreedy {
 	private int closestVehicle(int pin) {
 		int i = 0;
 		try {
-			double min = distances[pin][vehiclesAt[0]];
+			double min = distances[pin+1][vehiclesAt[0]];
 			int vehicle = 0;
 			for (i = 1; i < vehiclesAt.length; i++) {
-				if (min > distances[pin][vehiclesAt[i]]) {
-					min = distances[pin][vehiclesAt[i]];
+				if (min > distances[pin+1][vehiclesAt[i]]) {
+					min = distances[pin+1][vehiclesAt[i]];
 					vehicle = i;
 				}
 			}
@@ -241,23 +254,17 @@ class FingGreedy {
 	private int closestTo(int pin) {
 		int i = 0;
 		try {
-			boolean initialized = false;
 			double min = 0.0;
 			int index = 0;
 			for (i = 0; i < pending.length; i++) {
 				if (i != pin && pending[i]) {
-					if (!initialized) {
-						min = distances[pin][i];
+					if (min > distances[pin+1][i] || min == 0.0) {
+						min = distances[pin+1][i];
 						index = i;
-					} else {
-						if (min > distances[pin][i]) {
-							min = distances[pin][i];
-							index = i;
-						}
 					}
 				}
 			}
-			return MatrixLoader.fromIndex(index, numberOfVehicles);
+			return index;
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException(
 				"Index fuera de rango. pin=" + pin +
@@ -272,11 +279,11 @@ class FingGreedy {
 	private int fastestVehicle(int pin) {
 		int i = 0;
 		try {
-			double min = times[pin][vehiclesAt[0]] + vehiclesTimes[0];
+			double min = times[pin+1][vehiclesAt[0]] + vehiclesTimes[0];
 			int vehicle = 0;
 			for (i = 1; i < vehiclesAt.length; i++) {
-				if (min > times[pin][vehiclesAt[i]] + vehiclesTimes[i]) {
-					min = times[pin][vehiclesAt[i]] + vehiclesTimes[i];
+				if (min > times[pin+1][vehiclesAt[i]] + vehiclesTimes[i]) {
+					min = times[pin+1][vehiclesAt[i]] + vehiclesTimes[i];
 					vehicle = i;
 				}
 			}
@@ -289,6 +296,22 @@ class FingGreedy {
 				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
 				e
 			);
+		}
+	}
+	
+	/* para limpiar solucion vieja */
+	private void clean() {
+		for (int i = 0; i < numberOfVehicles; i++) {
+			vehiclesAt[i] = 0;
+			vehiclesTimes[i] = 0;
+		}
+		pending[0] = false;
+		for (int i = 1; i <= numberOfVariables-numberOfVehicles; i++) {
+			pending[i] = true;
+		}
+		assigned.clear();
+		for (int v = 0; v < numberOfVehicles; v++) {
+			assigned.add(new ArrayList<>());
 		}
 	}
 	
