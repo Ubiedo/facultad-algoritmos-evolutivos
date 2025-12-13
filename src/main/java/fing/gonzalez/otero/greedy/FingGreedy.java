@@ -77,23 +77,17 @@ class FingGreedy {
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
-		int pin = 0;
-		int closest = 0;
-		int vehicle = 0;
+		Pair<Integer,Integer> halfClosestHalfFastest;
 		while (keepGoing) {
 			keepGoing = false;
 			// buscar mas cercano por tiempo
-			closest = closestTo(pin);
-			// buscar vehiculo mas cercano por tiempo
-			vehicle = fastestVehicle(closest);
+			halfClosestHalfFastest = halfClosestHalfFastestTo();
 			// hacer las asignaciones y marcar como asignado
-			pending[closest] = false;
-			assigned.get(vehicle).add(closest);
+			pending[halfClosestHalfFastest.getLeft()] = false;
+			assigned.get(halfClosestHalfFastest.getRight()).add(halfClosestHalfFastest.getLeft());
 			// actualizar datos del vehiculo
-			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[closest][vehiclesAt[vehicle]];
-			vehiclesAt[vehicle] = closest;
-			// actualizar pin
-			pin = closest;
+			vehiclesTimes[halfClosestHalfFastest.getRight()] = vehiclesTimes[halfClosestHalfFastest.getRight()] + times[halfClosestHalfFastest.getLeft()][vehiclesAt[halfClosestHalfFastest.getRight()]];
+			vehiclesAt[halfClosestHalfFastest.getRight()] = halfClosestHalfFastest.getLeft();
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -106,35 +100,29 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, id+numberOfVehicles);
+				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
 				position++;
 			}
 		}
 		evaluate(solution);
 		return solution;
 	}
-	
+
 	public PermutationSolution<Integer> costSolution() {
 		clean();
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
-		int pin = 0;
-		int closest = 0;
-		int vehicle = 0;
+		Pair<Integer, Integer> closest;
 		while (keepGoing) {
 			keepGoing = false;
-			// buscar mas cercano
-			closest = closestTo(pin);
-			// buscar vehiculo mas cercano
-			vehicle = closestVehicle(closest);
+			// buscar par mas cercano
+			closest = closestTo();
 			// hacer las asignaciones y marcar como asignado
-			pending[closest] = false;
-			assigned.get(vehicle).add(closest);
+			pending[closest.getLeft()] = false;
+			assigned.get(closest.getRight()).add(closest.getLeft());
 			// actualizar datos del vehiculo
-			vehiclesAt[vehicle] = closest;
-			// actualizar pin
-			pin = closest;
+			vehiclesAt[closest.getRight()] = closest.getLeft().intValue();
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -147,7 +135,7 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, id+numberOfVehicles);
+				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
 				position++;
 			}
 		}
@@ -159,23 +147,17 @@ class FingGreedy {
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
 		boolean keepGoing = true;
-		int pin = 0;
-		int fastest = 0;
-		int vehicle = 0;
+		Pair<Integer, Integer> fastest;
 		while (keepGoing) {
 			keepGoing = false;
-			// buscar mas cercano por tiempo
-			fastest = fastestTo(pin);
-			// buscar vehiculo mas cercano por tiempo
-			vehicle = fastestVehicle(fastest);
+			// buscar par mas cercano por tiempo
+			fastest = fastestTo();
 			// hacer las asignaciones y marcar como asignado
-			pending[fastest] = false;
-			assigned.get(vehicle).add(fastest);
+			pending[fastest.getLeft()] = false;
+			assigned.get(fastest.getRight()).add(fastest.getLeft());
 			// actualizar datos del vehiculo
-			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[fastest][vehiclesAt[vehicle]];
-			vehiclesAt[vehicle] = fastest;
-			// actualizar pin
-			pin = fastest;
+			vehiclesTimes[fastest.getRight()] = vehiclesTimes[fastest.getRight()] + times[fastest.getLeft()][vehiclesAt[fastest.getRight()]];
+			vehiclesAt[fastest.getRight()] = fastest.getLeft();
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -188,7 +170,7 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, id+numberOfVehicles);
+				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
 				position++;
 			}
 		}
@@ -197,102 +179,81 @@ class FingGreedy {
 	}
 
 	/* Auxiliares */
-	private int fastestTo(int pin) {
+	private Pair<Integer, Integer> halfClosestHalfFastestTo() {
 		int i = 0;
 		try {
-			boolean initialized = false;
 			double min = 0.0;
 			int index = 0;
-			for (i = 0; i < pending.length; i++) {
-				if (i != pin && pending[i]) {
-					if (!initialized) {
-						min = times[pin+1][i];
-						index = i;
-					} else {
-						if (min > times[pin+1][i]) {
-							min = times[pin+1][i];
+			int vehicle = 0;
+			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
+				for (i = 0; i < pending.length; i++) {
+					if (i != vehiclesAt[vehicleId] && pending[i]) {
+						if (min > (times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] + distances[vehiclesAt[vehicleId]+1][i])/2 || min == 0.0) {
+							min = (times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] + distances[vehiclesAt[vehicleId]+1][i])/2;
 							index = i;
+							vehicle = vehicleId;
 						}
 					}
 				}
 			}
-			return index;
+			return Pair.of(index, vehicle);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException(
-				"Index fuera de rango. pin=" + pin +
-				", i=" + i +
-				", pin+1=" + (pin + 1) +
+				"Index fuera de rango. i=" + i +
 				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
 				e
 			);
 		}
 	}
 	
-	private int closestVehicle(int pin) {
+	private Pair<Integer, Integer> fastestTo() {
 		int i = 0;
 		try {
-			double min = distances[pin+1][vehiclesAt[0]];
+			double min = 0.0;
+			int index = 0;
 			int vehicle = 0;
-			for (i = 1; i < vehiclesAt.length; i++) {
-				if (min > distances[pin+1][vehiclesAt[i]]) {
-					min = distances[pin+1][vehiclesAt[i]];
-					vehicle = i;
+			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
+				for (i = 0; i < pending.length; i++) {
+					if (i != vehiclesAt[vehicleId] && pending[i]) {
+						if (min > times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] || min == 0.0) {
+							min = times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId];
+							index = i;
+							vehicle = vehicleId;
+						}
+					}
 				}
 			}
-			return vehicle;
+			return Pair.of(index, vehicle);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException(
-				"Index fuera de rango. pin=" + pin +
-				", i=" + i +
-				", pin+1=" + (pin + 1) +
+				"Index fuera de rango. i=" + i +
 				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
 				e
 			);
 		}
 	}
 
-	private int closestTo(int pin) {
+	private Pair<Integer,Integer> closestTo() {
 		int i = 0;
 		try {
 			double min = 0.0;
 			int index = 0;
-			for (i = 0; i < pending.length; i++) {
-				if (i != pin && pending[i]) {
-					if (min > distances[pin+1][i] || min == 0.0) {
-						min = distances[pin+1][i];
-						index = i;
+			int vehicle = 0;
+			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
+				for (i = 0; i < pending.length; i++) {
+					if (i != vehiclesAt[vehicleId] && pending[i]) {
+						if (min > distances[vehiclesAt[vehicleId]+1][i] || min == 0.0) {
+							min = distances[vehiclesAt[vehicleId]+1][i];
+							index = i;
+							vehicle = vehicleId;
+						}
 					}
 				}
 			}
-			return index;
+			return Pair.of(index, vehicle);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new RuntimeException(
-				"Index fuera de rango. pin=" + pin +
-				", i=" + i +
-				", pin+1=" + (pin + 1) +
-				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
-				e
-			);
-		}
-	}
-	
-	private int fastestVehicle(int pin) {
-		int i = 0;
-		try {
-			double min = times[pin+1][vehiclesAt[0]] + vehiclesTimes[0];
-			int vehicle = 0;
-			for (i = 1; i < vehiclesAt.length; i++) {
-				if (min > times[pin+1][vehiclesAt[i]] + vehiclesTimes[i]) {
-					min = times[pin+1][vehiclesAt[i]] + vehiclesTimes[i];
-					vehicle = i;
-				}
-			}
-			return vehicle;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new RuntimeException(
-				"Index fuera de rango. pin=" + pin +
-				", i=" + i +
-				", pin+1=" + (pin + 1) +
+				"Index fuera de rango. i=" + i +
 				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
 				e
 			);
@@ -316,7 +277,6 @@ class FingGreedy {
 	}
 	
 	/* para evaluar soluciones, idem a FingProblem */
-	
 	private void evaluate(PermutationSolution<Integer> solution) {
 		/* gCosto = ∑c(vi) (2.1) */
 		double cost = 0.0;

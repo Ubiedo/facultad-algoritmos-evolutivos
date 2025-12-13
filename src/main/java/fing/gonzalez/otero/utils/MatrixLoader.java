@@ -7,12 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MatrixLoader {
-	// TODO, despues quiza quitar esto y re hacer la matriz con los indices bien
-	private static int[] order = {0,98,63,8,19,111,17,130,11,110,108,71,13,41,42,15,3,6,43,7,2,54,44,100,45,14,4,70,22,123,16,64,40,
-			46,99,133,103,106,39,31,37,76,101,10,72,51,28,102,23,50,35,34,30,24,132,9,29,1,32,5,33,104,66,48,121,128,49,129,
-			52,107,68,125,109,79,65,18,59,38,36,47,83,78,92,134,119,21,61,89,57,105,80,87,60,62,73,84,27,25,118,12,77,90,26,
-			88,81,113,85,135,55,56,137,53,91,94,93,95,115,96,117,97,58,148,112,126,127,114,86,116,139,122,20,131,124,69,138,
-			133,82,75,74,67,140,136,147,120,150,149,142,143,148,145,151,146,141,151,152,153};
+	public static int [] order = {0,57,20,16,26,59,17,19,3,55,43,8,99,12,25,15,30,6,75,4,130,85,28,48,53,97,102,96,46,56,52
+			,39,58,60,51,50,78,40,77,38,32,13,14,18,22,24,33,79,63,66,49,45,68,111,21,108,109,88,120,76,92,86,93,2,31,74,62,138
+			,70,133,27,11,44,94,137,136,41,100,81,73,90,104,135,80,95,106,126,91,103,87,101,112,82,114,113,115,117,119,1,34,23
+			,42,47,36,61,89,37,69,10,72,9,5,122,105,125,116,127,118,98,84,142,64,129,29,132,71,123,124,65,67,7,131,54,35,83,107
+			,140,110,134,128,139,150,145,146,147,148,149,141,121,144,143,151,152};
 	
 	public static double[][] load(String resourcePath) throws Exception {
 		List<double[]> filas = new ArrayList<>();
@@ -35,20 +34,23 @@ public class MatrixLoader {
 	}
 	
 	public static int toIndex (int id, int vehicles) {
-		if (id-vehicles > 155 || id-vehicles < 0) {
-			return 0;
+		if (id == 0) {
+			return 0; // es el Centro de distribucion
 		}
-		return order[id-vehicles];
+		if (id-vehicles > 155 || id-vehicles < 0) {
+			throw new RuntimeException("El id no esta en el rango de la matriz: " + id + ", " + vehicles);
+		}
+		int index = 0;
+		while (order[index] != id-vehicles) {
+			index++;
+		}
+		return index;
 	}
 	
 	public static int fromIndex(int index, int vehicles) {
-		if (index < 0 || index > 155) {
-			throw new RuntimeException("El indice no esta en el rango de la matriz: " + index);
+		if (index < 0 || index >= order.length) {
+			throw new RuntimeException("El indice no esta en el rango de la matriz: " + index + ", " + vehicles);
 		}
-		int id = 0;
-		while (order[id] != index) {
-			id++;
-		}
-		return id;
+		return order[index]+vehicles;
 	}
 }
