@@ -60,7 +60,7 @@ class FingGreedy {
 			vehicle = fastestVehicle(closest);
 			// hacer las asignaciones y marcar como asignado
 			pending[closest] = false;
-			assigned.get(vehicle).addLast(closest);
+			assigned.get(vehicle).add(closest);
 			// actualizar datos del vehiculo
 			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[closest][vehiclesAt[vehicle]];
 			vehiclesAt[vehicle] = closest;
@@ -99,7 +99,7 @@ class FingGreedy {
 			vehicle = closestVehicle(closest);
 			// hacer las asignaciones y marcar como asignado
 			pending[closest] = false;
-			assigned.get(vehicle).addLast(closest);
+			assigned.get(vehicle).add(closest);
 			// actualizar datos del vehiculo
 			vehiclesAt[vehicle] = closest;
 			// actualizar pin
@@ -136,7 +136,7 @@ class FingGreedy {
 			vehicle = fastestVehicle(fastest);
 			// hacer las asignaciones y marcar como asignado
 			pending[fastest] = false;
-			assigned.get(vehicle).addLast(fastest);
+			assigned.get(vehicle).add(fastest);
 			// actualizar datos del vehiculo
 			vehiclesTimes[vehicle] = vehiclesTimes[vehicle] + times[fastest][vehiclesAt[vehicle]];
 			vehiclesAt[vehicle] = fastest;
