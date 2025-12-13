@@ -12,8 +12,8 @@ import java.util.List;
 public class FingMain {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				197 /* variables,  V + |R| = ?   */, 
-				43  /* vehicles,  V = 43|R|/154 */
+				195 /* variables,  V + |R| = ?   */, 
+				43  /* vehicles,  V = 43|R|/152 */
 		);
 		FingCrossover crossover = new FingCrossover(0.9);
 		FingMutation mutation = new FingMutation(0.2);

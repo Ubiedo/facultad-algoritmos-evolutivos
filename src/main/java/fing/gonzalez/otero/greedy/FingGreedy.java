@@ -29,8 +29,9 @@ class FingGreedy {
 			vehiclesAt[i] = 0;
 			vehiclesTimes[i] = 0;
 		}
-		pending = new boolean[variables-vehicles];
-		for (int i = 0; i < variables-vehicles; i++) {
+		pending = new boolean[variables-vehicles+1];
+		pending[0] = false;
+		for (int i = 1; i <= variables-vehicles; i++) {
 			pending[i] = true;
 		}
 		assigned = new ArrayList<>();
@@ -45,6 +46,28 @@ class FingGreedy {
 		}
 	}
 	
+	/* Para ver detalles que pueden dar fallo en indice */
+	public int distancesRowLength() {
+		return distances.length;
+	}
+
+	public int distancesColumnLength() {
+		return distances[0].length;
+	}
+	
+	public int timesRowLength() {
+		return times.length;
+	}
+
+	public int timesColumnLength() {
+		return times[0].length;
+	}
+	
+	public int pendingLength() {
+		return pending.length;
+	}
+	
+	/* Solciones de los greedy */
 	public PermutationSolution<Integer> compromiseSolution() {
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(numberOfVariables, 2);
@@ -160,69 +183,116 @@ class FingGreedy {
 		return solution;
 	}
 
+	/* Auxiliares */
 	private int fastestTo(int pin) {
-		boolean initialized = false;
-		double min = 0.0;
-		int index = 0;
-		for (int i = 0; i < pending.length; i++) {
-			if (i != pin && pending[i]) {
-				if (!initialized) {
-					min = times[pin][i];
-					index = i;
-				} else {
-					if (min > times[pin][i]) {
+		int i = 0;
+		try {
+			boolean initialized = false;
+			double min = 0.0;
+			int index = 0;
+			for (i = 0; i < pending.length; i++) {
+				if (i != pin && pending[i]) {
+					if (!initialized) {
 						min = times[pin][i];
 						index = i;
+					} else {
+						if (min > times[pin][i]) {
+							min = times[pin][i];
+							index = i;
+						}
 					}
 				}
 			}
+			return MatrixLoader.fromIndex(index, numberOfVehicles);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException(
+				"Index fuera de rango. pin=" + pin +
+				", i=" + i +
+				", pin+1=" + (pin + 1) +
+				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
+				e
+			);
 		}
-		return MatrixLoader.fromIndex(index, numberOfVehicles);
 	}
 	
 	private int closestVehicle(int pin) {
-		double min = distances[pin][vehiclesAt[0]];
-		int vehicle = 0;
-		for (int i = 1; i < vehiclesAt.length; i++) {
-			if (min > distances[pin][vehiclesAt[i]]) {
-				min = distances[pin][vehiclesAt[i]];
-				vehicle = i;
+		int i = 0;
+		try {
+			double min = distances[pin][vehiclesAt[0]];
+			int vehicle = 0;
+			for (i = 1; i < vehiclesAt.length; i++) {
+				if (min > distances[pin][vehiclesAt[i]]) {
+					min = distances[pin][vehiclesAt[i]];
+					vehicle = i;
+				}
 			}
+			return vehicle;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException(
+				"Index fuera de rango. pin=" + pin +
+				", i=" + i +
+				", pin+1=" + (pin + 1) +
+				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
+				e
+			);
 		}
-		return vehicle;
 	}
 
 	private int closestTo(int pin) {
-		boolean initialized = false;
-		double min = 0.0;
-		int index = 0;
-		for (int i = 0; i < pending.length; i++) {
-			if (i != pin && pending[i]) {
-				if (!initialized) {
-					min = distances[pin][i];
-					index = i;
-				} else {
-					if (min > distances[pin][i]) {
+		int i = 0;
+		try {
+			boolean initialized = false;
+			double min = 0.0;
+			int index = 0;
+			for (i = 0; i < pending.length; i++) {
+				if (i != pin && pending[i]) {
+					if (!initialized) {
 						min = distances[pin][i];
 						index = i;
+					} else {
+						if (min > distances[pin][i]) {
+							min = distances[pin][i];
+							index = i;
+						}
 					}
 				}
 			}
+			return MatrixLoader.fromIndex(index, numberOfVehicles);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException(
+				"Index fuera de rango. pin=" + pin +
+				", i=" + i +
+				", pin+1=" + (pin + 1) +
+				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
+				e
+			);
 		}
-		return MatrixLoader.fromIndex(index, numberOfVehicles);
 	}
 	
 	private int fastestVehicle(int pin) {
-		double min = times[pin][vehiclesAt[0]] + vehiclesTimes[0];
-		int vehicle = 0;
-		for (int i = 1; i < vehiclesAt.length; i++) {
-			if (min > times[pin][vehiclesAt[i]] + vehiclesTimes[i]) {
-				min = times[pin][vehiclesAt[i]] + vehiclesTimes[i];
-				vehicle = i;
+		int i = 0;
+		try {
+			double min = times[pin][vehiclesAt[0]] + vehiclesTimes[0];
+			int vehicle = 0;
+			for (i = 1; i < vehiclesAt.length; i++) {
+				if (min > times[pin][vehiclesAt[i]] + vehiclesTimes[i]) {
+					min = times[pin][vehiclesAt[i]] + vehiclesTimes[i];
+					vehicle = i;
+				}
 			}
+			return vehicle;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RuntimeException(
+				"Index fuera de rango. pin=" + pin +
+				", i=" + i +
+				", pin+1=" + (pin + 1) +
+				", vehiclesAt[i]=" + (i < vehiclesAt.length ? vehiclesAt[i] : "i fuera de vehiclesAt"),
+				e
+			);
 		}
-		return vehicle;
 	}
+	
+	/* para evaluar soluciones, idem a FingProblem */
 	
 	private void evaluate(PermutationSolution<Integer> solution) {
 		/* gCosto = ∑c(vi) (2.1) */

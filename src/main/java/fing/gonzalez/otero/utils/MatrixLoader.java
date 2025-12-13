@@ -49,6 +49,6 @@ public class MatrixLoader {
 		while (order[id] != index) {
 			id++;
 		}
-		return id + vehicles;
+		return id;
 	}
 }
