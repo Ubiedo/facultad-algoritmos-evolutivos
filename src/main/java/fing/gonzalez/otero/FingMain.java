@@ -4,9 +4,13 @@ import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
+
+import fing.gonzalez.otero.utils.ExportCSV;
+
 import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FingMain {
@@ -23,11 +27,13 @@ public class FingMain {
 						new RankingAndCrowdingDistanceComparator<>()
 				);
 		// tiempo de inicio
+		int initialPopulation = 100;
+		int maxGenerations = 100000;
 		long startTime = System.currentTimeMillis();
 		Algorithm<List<PermutationSolution<Integer>>> algorithm =
-				new NSGAIIBuilder<>(problem, crossover, mutation, 1000)
+				new NSGAIIBuilder<>(problem, crossover, mutation, initialPopulation)
 						.setSelectionOperator(selection)
-						.setMaxEvaluations(10000000)
+						.setMaxEvaluations(maxGenerations)
 						.build();
 
 		algorithm.run();
@@ -44,5 +50,9 @@ public class FingMain {
 			System.out.println("-------------------");
 		}
 		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
+		List<String> headers = new ArrayList<String>();
+		headers.add("costo");
+		headers.add("tiempo");
+		ExportCSV.exportPermutation("ae-"+initialPopulation+"-"+maxGenerations, headers, population);
 	}
 }

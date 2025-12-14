@@ -56,6 +56,7 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		double time = 0.0;
 		int fromNode = 0;
 		double accumulatedTime = 0.0;
+		int vehicleCapacity = 100;
 		Pair<Double, Double> values;
 		for (int i = 1; i < solution.getLength(); i++) {
 			/* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
@@ -65,8 +66,19 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 				fromNode = 0;
 				accumulatedTime = 0;
 			} else {
+				// chequear que tenga espacio para enviarle a ese receptor
+				if (vehicleCapacity >= weight(thisNode)) {
+					vehicleCapacity -= weight(thisNode);
+				} else {
+					// agregar coste de volver al centro de distribucion
+					cost += obtainCost(fromNode, 0);
+					accumulatedTime += obtainTime(fromNode, 0);
+					fromNode = 0;
+					// resetear capacidad
+					vehicleCapacity = 100 - weight(thisNode);
+				}
 				cost += obtainCost(fromNode, thisNode);
-				accumulatedTime += obtainTime(fromNode, 0, accumulatedTime);
+				accumulatedTime += obtainTime(fromNode, thisNode);
 				time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, getNumberOfVehicles()));
 				fromNode = thisNode;
 			}
@@ -85,23 +97,33 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		return distances[from][to]*(0.0104);
 	}
 	
-	public double obtainTime(int from, int to, double accumulatedTime) {
+	public double obtainTime(int from, int to) {
 		if (from == to) {
 			return 0.0;
 		}
 		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
 		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
-		return accumulatedTime + times[from][to];
+		return times[from][to];
 	}
 	
 	public int urgency(int id) {
 		if (id < 47) {
-			return 7;
+			return 3;
 		}
 		if (id < 113) {
 			return 5;
 		}
-		return 3;
+		return 7;
+	}
+	
+	public int weight(int id) {
+		if (id < 47) {
+			return 15;
+		}
+		if (id < 113) {
+			return 9;
+		}
+		return 4;
 	}
 	
 	/* Evitar que se cree una solucion sin vehiculo al comienzo */

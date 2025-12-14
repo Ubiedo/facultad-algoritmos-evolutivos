@@ -142,6 +142,7 @@ class FingGreedy {
 		evaluate(solution);
 		return solution;
 	}
+	
 	public PermutationSolution<Integer> timeSolution() {
 		clean();
 		IntegerPermutationSolution solution =
@@ -188,8 +189,8 @@ class FingGreedy {
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > (times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] + distances[vehiclesAt[vehicleId]+1][i])/2 || min == 0.0) {
-							min = (times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] + distances[vehiclesAt[vehicleId]+1][i])/2;
+						if (min > ((urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) + (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]))/2 || min == 0.0) {
+							min = ((urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) + (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]))/2;
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -215,8 +216,8 @@ class FingGreedy {
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId] || min == 0.0) {
-							min = times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId];
+						if (min > (urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) || min == 0.0) {
+							min = (urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId]));
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -242,8 +243,8 @@ class FingGreedy {
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > distances[vehiclesAt[vehicleId]+1][i] || min == 0.0) {
-							min = distances[vehiclesAt[vehicleId]+1][i];
+						if (min > (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]) || min == 0.0) {
+							min = (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]);
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -277,13 +278,14 @@ class FingGreedy {
 	}
 	
 	/* para evaluar soluciones, idem a FingProblem */
-	private void evaluate(PermutationSolution<Integer> solution) {
+	public void evaluate(PermutationSolution<Integer> solution) {
 		/* gCosto = ∑c(vi) (2.1) */
 		double cost = 0.0;
 		/* gTiempo = ∑(t(r)* u(r))/|R| */
 		double time = 0.0;
 		int fromNode = 0;
 		double accumulatedTime = 0.0;
+		int vehicleCapacity = 100;
 		Pair<Double, Double> values;
 		for (int i = 1; i < solution.getLength(); i++) {
 			/* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
@@ -293,8 +295,19 @@ class FingGreedy {
 				fromNode = 0;
 				accumulatedTime = 0;
 			} else {
+				// chequear que tenga espacio para enviarle a ese receptor
+				if (vehicleCapacity >= weight(thisNode)) {
+					vehicleCapacity -= weight(thisNode);
+				} else {
+					// agregar coste de volver al centro de distribucion
+					cost += obtainCost(fromNode, 0);
+					accumulatedTime += obtainTime(fromNode, 0);
+					fromNode = 0;
+					// resetear capacidad
+					vehicleCapacity = 100 - weight(thisNode);
+				}
 				cost += obtainCost(fromNode, thisNode);
-				accumulatedTime += obtainTime(fromNode, 0, accumulatedTime);
+				accumulatedTime += obtainTime(fromNode, thisNode);
 				time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, numberOfVehicles));
 				fromNode = thisNode;
 			}
@@ -304,7 +317,7 @@ class FingGreedy {
 		solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
 	}
 	
-	private double obtainCost(int from, int to) {
+	public double obtainCost(int from, int to) {
 		if (from == to) {
 			return 0.0;
 		}
@@ -313,22 +326,32 @@ class FingGreedy {
 		return distances[from][to]*(0.0104);
 	}
 	
-	private double obtainTime(int from, int to, double accumulatedTime) {
+	public double obtainTime(int from, int to) {
 		if (from == to) {
 			return 0.0;
 		}
 		from = MatrixLoader.toIndex(from, numberOfVehicles);
 		to = MatrixLoader.toIndex(to, numberOfVehicles);
-		return accumulatedTime + times[from][to];
+		return times[from][to];
 	}
 	
-	private int urgency(int id) {
+	public int urgency(int id) {
 		if (id < 47) {
-			return 7;
+			return 3;
 		}
 		if (id < 113) {
 			return 5;
 		}
-		return 3;
+		return 7;
+	}
+	
+	public int weight(int id) {
+		if (id < 47) {
+			return 15;
+		}
+		if (id < 113) {
+			return 9;
+		}
+		return 4;
 	}
 }
