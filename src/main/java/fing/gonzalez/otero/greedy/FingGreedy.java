@@ -18,6 +18,7 @@ class FingGreedy {
 	private int numberOfVariables;
 	private int numberOfVehicles;
 	private int [] vehiclesAt;
+	private int [] vehiclesCapacity;
 	private double [] vehiclesTimes;
 	private boolean [] pending;
 	private List<List<Integer>> assigned;
@@ -26,6 +27,7 @@ class FingGreedy {
 		numberOfVariables = variables;
 		numberOfVehicles = vehicles;
 		vehiclesAt = new int[vehicles];
+		vehiclesCapacity = new int[vehicles];
 		vehiclesTimes = new double[vehicles];
 		pending = new boolean[variables-vehicles+1];
 		assigned = new ArrayList<>();
@@ -88,6 +90,10 @@ class FingGreedy {
 			// actualizar datos del vehiculo
 			vehiclesTimes[halfClosestHalfFastest.getRight()] = vehiclesTimes[halfClosestHalfFastest.getRight()] + times[halfClosestHalfFastest.getLeft()][vehiclesAt[halfClosestHalfFastest.getRight()]];
 			vehiclesAt[halfClosestHalfFastest.getRight()] = halfClosestHalfFastest.getLeft();
+			vehiclesCapacity[halfClosestHalfFastest.getRight()] -= weight(halfClosestHalfFastest.getLeft());
+			if (vehiclesCapacity[halfClosestHalfFastest.getRight()] < 0) {
+				vehiclesCapacity[halfClosestHalfFastest.getRight()] = 100 - weight(halfClosestHalfFastest.getLeft());
+			}
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -123,6 +129,10 @@ class FingGreedy {
 			assigned.get(closest.getRight()).add(closest.getLeft());
 			// actualizar datos del vehiculo
 			vehiclesAt[closest.getRight()] = closest.getLeft().intValue();
+			vehiclesCapacity[closest.getRight()] -= weight(closest.getLeft());
+			if (vehiclesCapacity[closest.getRight()] < 0) {
+				vehiclesCapacity[closest.getRight()] = 100 - weight(closest.getLeft());
+			}
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -159,6 +169,10 @@ class FingGreedy {
 			// actualizar datos del vehiculo
 			vehiclesTimes[fastest.getRight()] = vehiclesTimes[fastest.getRight()] + times[fastest.getLeft()][vehiclesAt[fastest.getRight()]];
 			vehiclesAt[fastest.getRight()] = fastest.getLeft();
+			vehiclesCapacity[fastest.getRight()] -= weight(fastest.getLeft());
+			if (vehiclesCapacity[fastest.getRight()] < 0) {
+				vehiclesCapacity[fastest.getRight()] = 100 - weight(fastest.getLeft());
+			}
 			// actualizar keepGoing
 			for (int i = 0; i < pending.length; i++) {
 				keepGoing = keepGoing || pending[i];
@@ -186,11 +200,20 @@ class FingGreedy {
 			double min = 0.0;
 			int index = 0;
 			int vehicle = 0;
+			double deltaTime = 0;
+			double deltaCost = 0;
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > ((urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) + (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]))/2 || min == 0.0) {
-							min = ((urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) + (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]))/2;
+						if (vehiclesCapacity[vehicleId] < weight(i)) {
+							deltaCost = distances[vehiclesAt[vehicleId]+1][0] + 2*distances[1][i];
+							deltaTime = urgency(i)*(times[vehiclesAt[vehicleId]+1][0] + times[1][i] + vehiclesTimes[vehicleId]);
+						} else {
+							deltaCost = distances[vehiclesAt[vehicleId]+1][i] + distances[1][i];
+							deltaTime = urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId]);
+						}
+						if (min > (deltaTime + deltaCost)/2 || min == 0.0) {
+							min = (deltaTime + deltaCost)/2;
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -213,11 +236,17 @@ class FingGreedy {
 			double min = 0.0;
 			int index = 0;
 			int vehicle = 0;
+			double deltaTime = 0;
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > (urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId])) || min == 0.0) {
-							min = (urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId]));
+						if (vehiclesCapacity[vehicleId] < weight(i)) {
+							deltaTime = urgency(i)*(times[vehiclesAt[vehicleId]+1][0] + times[1][i] + vehiclesTimes[vehicleId]);
+						} else {
+							deltaTime = urgency(i)*(times[vehiclesAt[vehicleId]+1][i] + vehiclesTimes[vehicleId]);
+						}
+						if (min > deltaTime || min == 0.0) {
+							min = deltaTime;
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -240,11 +269,17 @@ class FingGreedy {
 			double min = 0.0;
 			int index = 0;
 			int vehicle = 0;
+			double deltaCost = 0;
 			for (int vehicleId = 0; vehicleId < vehiclesAt.length; vehicleId++) {
 				for (i = 0; i < pending.length; i++) {
 					if (i != vehiclesAt[vehicleId] && pending[i]) {
-						if (min > (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]) || min == 0.0) {
-							min = (distances[vehiclesAt[vehicleId]+1][i] + distances[1][i]);
+						if (vehiclesCapacity[vehicleId] < weight(i)) {
+							deltaCost = distances[vehiclesAt[vehicleId]+1][0] + 2*distances[1][i];
+						} else {
+							deltaCost = distances[vehiclesAt[vehicleId]+1][i] + distances[1][i];
+						}
+						if (min > deltaCost || min == 0.0) {
+							min = deltaCost;
 							index = i;
 							vehicle = vehicleId;
 						}
@@ -266,6 +301,7 @@ class FingGreedy {
 		for (int i = 0; i < numberOfVehicles; i++) {
 			vehiclesAt[i] = 0;
 			vehiclesTimes[i] = 0;
+			vehiclesCapacity[i] = 0;
 		}
 		pending[0] = false;
 		for (int i = 1; i <= numberOfVariables-numberOfVehicles; i++) {
