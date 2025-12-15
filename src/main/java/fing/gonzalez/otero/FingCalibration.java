@@ -18,7 +18,7 @@ public class FingCalibration {
 		FingProblem problem = new FingProblem(
 				61 /* variables,  V + |R| = ?   */, 
 				13  /* vehicles,  V = 43|R|/152 */,
-				"r1"
+				"r2"
 		);
 		int initialPopulation = 100;
 		int maxGenerations = 100000;
@@ -35,7 +35,7 @@ public class FingCalibration {
 		for (double crossoverProbability : crossoverValues) {
 			for (double mutationProbability : mutationValues) {
 				config++;
-				for (int run = 0; run < 1; run++) {
+				for (int run = 0; run < 30; run++) {
 					FingCrossover crossover = new FingCrossover(crossoverProbability);
 					FingMutation mutation = new FingMutation(mutationProbability);
 					SelectionOperator<List<PermutationSolution<Integer>>,
@@ -64,7 +64,7 @@ public class FingCalibration {
 						System.out.println("-------------------");
 					}
 					System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
-					ExportCSV.exportPermutation("instancia1/conf-param-"+config+"/run"+run, headers, population);
+					ExportCSV.exportPermutation("instancia2/conf-param-"+config+"/run"+run, headers, population);
 				}
 			}
 		}
