@@ -19,16 +19,18 @@ public class FingMain {
 				195 /* variables,  V + |R| = ?   */, 
 				43  /* vehicles,  V = 43|R|/152 */
 		);
-		FingCrossover crossover = new FingCrossover(0.9);
-		FingMutation mutation = new FingMutation(0.2);
+		double crossoverProbability = 0.9;
+		double mutationProbability = 0.2;
+		int initialPopulation = 100;
+		int maxGenerations = 100000;
+		FingCrossover crossover = new FingCrossover(crossoverProbability);
+		FingMutation mutation = new FingMutation(mutationProbability);
 		SelectionOperator<List<PermutationSolution<Integer>>,
 				PermutationSolution<Integer>> selection =
 				new BinaryTournamentSelection<>(
 						new RankingAndCrowdingDistanceComparator<>()
 				);
 		// tiempo de inicio
-		int initialPopulation = 100;
-		int maxGenerations = 100000;
 		long startTime = System.currentTimeMillis();
 		Algorithm<List<PermutationSolution<Integer>>> algorithm =
 				new NSGAIIBuilder<>(problem, crossover, mutation, initialPopulation)
@@ -38,9 +40,9 @@ public class FingMain {
 
 		algorithm.run();
 		// tiempo de fin
-	    long endTime = System.currentTimeMillis();
-	    long durationMillis = endTime - startTime; // tiempo en milisegundos
-	    double durationSeconds = durationMillis / 1000.0; // tiempo en segundos
+		long endTime = System.currentTimeMillis();
+		long durationMillis = endTime - startTime; // tiempo en milisegundos
+		double durationSeconds = durationMillis / 1000.0; // tiempo en segundos
 		List<PermutationSolution<Integer>> population = algorithm.getResult();
 		System.out.println("Soluciones finales:");
 		for (PermutationSolution<Integer> sol : population) {
