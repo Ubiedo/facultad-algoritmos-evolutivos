@@ -16,7 +16,7 @@ import java.util.List;
 public class FingCalibration {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				62 /* variables,  V + |R| = ?   */, 
+				61 /* variables,  V + |R| = ?   */, 
 				13  /* vehicles,  V = 43|R|/152 */,
 				"r1"
 		);
