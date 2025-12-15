@@ -17,7 +17,8 @@ public class FingMain {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
 				195 /* variables,  V + |R| = ?   */, 
-				43  /* vehicles,  V = 43|R|/152 */
+				43  /* vehicles,  V = 43|R|/152 */,
+				"completa"
 		);
 		double crossoverProbability = 0.9;
 		double mutationProbability = 0.2;

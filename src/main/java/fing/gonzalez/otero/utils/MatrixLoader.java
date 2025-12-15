@@ -40,11 +40,13 @@ public class MatrixLoader {
 		if (id-vehicles > 155 || id-vehicles < 0) {
 			throw new RuntimeException("El id no esta en el rango de la matriz: " + id + ", " + vehicles);
 		}
+		/*
 		int index = 0;
 		while (order[index] != id-vehicles) {
 			index++;
 		}
-		return index;
+		*/
+		return id - vehicles;
 	}
 	
 	public static int fromIndex(int index, int vehicles) {

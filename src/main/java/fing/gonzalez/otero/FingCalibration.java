@@ -16,8 +16,9 @@ import java.util.List;
 public class FingCalibration {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				195 /* variables,  V + |R| = ?   */, 
-				43  /* vehicles,  V = 43|R|/152 */
+				62 /* variables,  V + |R| = ?   */, 
+				13  /* vehicles,  V = 43|R|/152 */,
+				"r1"
 		);
 		int initialPopulation = 100;
 		int maxGenerations = 100000;
@@ -33,8 +34,8 @@ public class FingCalibration {
 		headers.add("tiempo");
 		for (double crossoverProbability : crossoverValues) {
 			for (double mutationProbability : mutationValues) {
-				for (int run = 0; run < 30; run++) {
-					config++;
+				config++;
+				for (int run = 0; run < 1; run++) {
 					FingCrossover crossover = new FingCrossover(crossoverProbability);
 					FingMutation mutation = new FingMutation(mutationProbability);
 					SelectionOperator<List<PermutationSolution<Integer>>,

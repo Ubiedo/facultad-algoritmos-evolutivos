@@ -18,15 +18,15 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	private double[][] distances;
 	private double[][] times;
 	
-	public FingProblem (int variables, int vehicles) {
+	public FingProblem (int variables, int vehicles, String instace) {
 		setNumberOfConstraints(0);
 		setNumberOfVariables(variables);
 		setNumberOfObjectives(2);
 		setNumberOfVehicles(vehicles);
 		setName("FingProblem");
 		try {
-			times = MatrixLoader.load("data/times.csv");
-			distances = MatrixLoader.load("data/distances.csv");
+			times = MatrixLoader.load("data/times_" + instace + ".csv");
+			distances = MatrixLoader.load("data/distances_" + instace + ".csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices", e);
 		}
