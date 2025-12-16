@@ -32,8 +32,8 @@ class FingGreedy {
 		pending = new boolean[variables-vehicles+1];
 		assigned = new ArrayList<>();
 		try {
-			distances = MatrixLoader.load("data/distances.csv");
-			times = MatrixLoader.load("data/times.csv");
+			distances = MatrixLoader.load("data/distances_c.csv");
+			times = MatrixLoader.load("data/times_c.csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices en greedy de compromiso", e);
 		}
@@ -106,7 +106,7 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
+				solution.setVariable(position, id + numberOfVehicles);
 				position++;
 			}
 		}
@@ -145,7 +145,7 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
+				solution.setVariable(position, id + numberOfVehicles);
 				position++;
 			}
 		}
@@ -185,7 +185,7 @@ class FingGreedy {
 			position++;
 			// agrega los receptores del vehiculo
 			for (Integer id : assigned.get(vehicleId)) {
-				solution.setVariable(position, MatrixLoader.fromIndex(id, numberOfVehicles));
+				solution.setVariable(position, id + numberOfVehicles);
 				position++;
 			}
 		}

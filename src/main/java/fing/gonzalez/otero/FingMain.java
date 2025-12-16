@@ -56,6 +56,6 @@ public class FingMain {
 		List<String> headers = new ArrayList<String>();
 		headers.add("costo");
 		headers.add("tiempo");
-		ExportCSV.exportPermutation("ae-"+initialPopulation+"-"+maxGenerations, headers, population);
+		ExportCSV.exportPermutation("ae", headers, population);
 	}
 }
