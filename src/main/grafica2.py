@@ -8,7 +8,7 @@ from scipy.stats import wilcoxon
 # =========================
 # CARGAR MATRIZ HV
 # =========================
-df = pd.read_csv("resources/hv_matrices/instancia1_hv_matrix.csv")
+df = pd.read_csv("resources/hv_matrices/instancia3_hv_matrix.csv")
 
 configs = df.columns.tolist()
 n_configs = len(configs)

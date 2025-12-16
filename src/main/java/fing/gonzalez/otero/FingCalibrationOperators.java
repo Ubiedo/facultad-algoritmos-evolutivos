@@ -13,7 +13,7 @@ import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FingCalibration {
+public class FingCalibrationOperators {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
 				61 /* variables,  V + |R| = ?   */, 

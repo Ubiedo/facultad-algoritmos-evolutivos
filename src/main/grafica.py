@@ -8,7 +8,7 @@ from itertools import combinations
 # =============================
 # CONFIG
 # =============================
-CSV_PATH = "resources/hv_matrices/instancia1_hv_matrix.csv"   # ajustá si el nombre es otro
+CSV_PATH = "resources/hv_matrices/instancia3_hv_matrix.csv"   # ajustá si el nombre es otro
 ALPHA = 0.05
 
 # =============================
