@@ -1,10 +1,13 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.calibration;
 
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
 
+import fing.gonzalez.otero.jmetal.FingCrossover;
+import fing.gonzalez.otero.jmetal.FingMutation;
+import fing.gonzalez.otero.jmetal.FingProblem;
 import fing.gonzalez.otero.utils.ExportCSV;
 
 import org.uma.jmetal.operator.selection.SelectionOperator;
@@ -13,7 +16,7 @@ import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FingCalibrationPopulation {
+public class Population {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
 				61 /* variables,  V + |R| = ?   */, 

@@ -1,4 +1,4 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.jmetal;
 
 import org.uma.jmetal.operator.crossover.CrossoverOperator;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;

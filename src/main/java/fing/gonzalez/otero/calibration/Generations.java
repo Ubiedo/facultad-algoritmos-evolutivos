@@ -1,5 +1,8 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.calibration;
 
+import fing.gonzalez.otero.jmetal.FingCrossover;
+import fing.gonzalez.otero.jmetal.FingMutation;
+import fing.gonzalez.otero.jmetal.FingProblem;
 import fing.gonzalez.otero.utils.ExportCSV;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
@@ -13,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class FingCalibrationGenerations {
+public class Generations {
 	private static PermutationSolution<Integer> minCostExtreme(
 			List<PermutationSolution<Integer>> front) {
 		double minCost = front.stream()

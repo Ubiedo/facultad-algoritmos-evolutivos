@@ -1,4 +1,4 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.jmetal;
 
 import java.util.ArrayList;
 import java.util.Collections;
