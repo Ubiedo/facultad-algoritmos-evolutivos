@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 
-class Test {
+class Main {
 	public static void main(String[] args) {
 		FingGreedy problem = new FingGreedy(
 				195 /* variables,  V + |R| = ?   */, 

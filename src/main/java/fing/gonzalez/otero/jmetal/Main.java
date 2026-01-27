@@ -1,13 +1,10 @@
-package fing.gonzalez.otero;
+package fing.gonzalez.otero.jmetal;
 
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
 
-import fing.gonzalez.otero.jmetal.FingCrossover;
-import fing.gonzalez.otero.jmetal.FingMutation;
-import fing.gonzalez.otero.jmetal.FingProblem;
 import fing.gonzalez.otero.utils.ExportCSV;
 
 import org.uma.jmetal.operator.selection.SelectionOperator;
