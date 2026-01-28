@@ -4,6 +4,7 @@ import fing.gonzalez.otero.utils.MatrixLoader;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,14 +21,14 @@ class Time {
     private int numberOfVehicles;
     private List<List<Integer>> routes;
     private int [] whichRoute;
-    List<Pair<Double, Pair<Integer, Integer>>> savings;
+    List<Pair<Double, Pair<Integer, Integer>>> losses;
     
     public Time (int variables, int vehicles) {
         numberOfVariables = variables;
         numberOfVehicles = vehicles;
         whichRoute = new int[variables];
         routes = new ArrayList<>();
-        savings = new ArrayList<>();
+        losses = new ArrayList<>();
         try {
             distances = MatrixLoader.load("data/distances_c.csv");
             times = MatrixLoader.load("data/times_c.csv");
@@ -82,9 +83,9 @@ class Time {
         /* Hacer uniones de rutas para reducir costos hasta que no se pueda mas */
         while (keepGoing) {
             // calcular savings
-            calculateSavings();
+            calculateLosses();
             // hacer uniones, si se hace alguna volver keepGoing true
-            keepGoing = mergeRoutesThatSaveTheMost();
+            keepGoing = mergeRoutesThatLoseTheLess();
         }
         position = 0;
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
@@ -104,23 +105,37 @@ class Time {
     }
 
     /* Auxiliares */
-    private void calculateSavings() {
-        Double saves;
-        savings.clear();
-        // ver si hay rutas para unir, en ese caso unirlas y dalre a keepGoing
-        // calcular savings
+    private void calculateLosses() {
+        Double loss;
+        losses.clear();
+        List<List<Integer>> couldMerge = new ArrayList<>();
+        for (List<Integer> route: routes) {
+            couldMerge.add(new ArrayList<>(route));
+        }
+        List<Integer> route;
+        // calcular losses
         for (List<Integer> route_i: routes) {
             for (List<Integer> route_j: routes) {
                 if (route_i.getFirst() != route_j.getFirst()) {
-                    saves = obtainTime(route_i.getLast(), 0) + obtainTime(0, route_j.getFirst()) - obtainTime(route_i.getLast(), route_j.getFirst()); // d(i,CD) + d(CD,j) - d(i,j)
-                    savings.add(Pair.of(saves, Pair.of(route_i.getLast(),route_j.getFirst())));
+                    // simular conjunto de rutas final
+                    couldMerge.remove(whichRoute[route_j.getLast()]);
+                    route = couldMerge.get(whichRoute[route_i.getFirst()]);
+                    for (Integer id: route_j) {
+                        route.addLast(id);
+                    }
+                    loss = (routesWeightedTime(routes) - routesWeightedTime(couldMerge))/(numberOfVariables-numberOfVehicles); // time from new routes - time from old routes / #receptores
+                    losses.add(Pair.of(loss, Pair.of(route_i.getLast(),route_j.getFirst())));
+                    // restablecer couldMerge
+                    couldMerge.remove(whichRoute[route_i.getFirst()]);
+                    couldMerge.add(whichRoute[route_i.getFirst()], new ArrayList<>(route_i));
+                    couldMerge.add(whichRoute[route_j.getFirst()], new ArrayList<>(route_j));
                 }
             }
         }
-        // ordenar los savings
-        savings.sort(
+        // ordenar los losses
+        losses.sort(
                 Comparator
-                    // save descendiente
+                    // loss descendiente
                     .comparingDouble(
                         (Pair<Double, Pair<Integer, Integer>> p) -> p.getLeft()
                     ).reversed()
@@ -134,17 +149,20 @@ class Time {
                     ));
     }
     
-    private boolean mergeRoutesThatSaveTheMost() {
+    // TODO
+    private boolean mergeRoutesThatLoseTheLess() {
+        // cuando se alcanza la cantidad de rutas igual a la de vehiculos ya no deberia de mejorar el tiempo
+        if (routes.size() <= numberOfVehicles) return false;
         Integer i,j;
         int deletedRoute;
-        for (Pair<Double, Pair<Integer, Integer>> couldSave: savings) {
+        for (Pair<Double, Pair<Integer, Integer>> couldLoss: losses) {
             // ver que no sea negativo
-            if (couldSave.getLeft() <= 0) break;
+            if (couldLoss.getLeft() <= 0) break;
             // ver que no esten ya en la misma ruta
             // ver que aun este disponible esa ruta para hacer el merge
             // ver que no se sobre pase la capacidad de un vehiculo en la ruta
-            i = couldSave.getRight().getLeft();
-            j = couldSave.getRight().getRight();
+            i = couldLoss.getRight().getLeft();
+            j = couldLoss.getRight().getRight();
             List<Integer> route_i = routes.get(whichRoute[i]);
             List<Integer> route_j = routes.get(whichRoute[j]);
             if (whichRoute[i] != whichRoute[j] && route_i.getLast() == i && route_j.getFirst() == j && (routeWeight(route_i) + routeWeight(route_j)) <= 1) {
@@ -173,6 +191,21 @@ class Time {
         }
         // se termino
         return false;
+    }
+    
+    private double routesWeightedTime(List<List<Integer>> rs) {
+        double total = 0;
+        double acumulated = 0;
+        int previous = 0;
+        for (List<Integer> route: rs) {
+            for (Integer r: route) {
+                acumulated += obtainTime(previous, r);
+                total += acumulated * urgency(MatrixLoader.toIndex(r, numberOfVehicles));
+                previous = r;
+            }
+            acumulated = 0;
+        }
+        return total;
     }
     
     private double routeWeight(List<Integer> route) {
