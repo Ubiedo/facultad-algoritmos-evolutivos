@@ -138,6 +138,8 @@ class Cost {
         Integer i,j;
         int deletedRoute;
         for (Pair<Double, Pair<Integer, Integer>> couldSave: savings) {
+            // ver que no sea negativo
+            if (couldSave.getLeft() <= 0) break;
             // ver que no esten ya en la misma ruta
             // ver que aun este disponible esa ruta para hacer el merge
             // ver que no se sobre pase la capacidad de un vehiculo en la ruta

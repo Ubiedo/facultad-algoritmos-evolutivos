@@ -9,7 +9,7 @@ import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 
 class OldMain {
 	public static void main(String[] args) {
-		Olds problem = new Olds(
+		OldGreedys problem = new OldGreedys(
 				195 /* variables,  V + |R| = ?   */, 
 				43  /* vehicles,  V = 43|R|/152 */
 		);
