@@ -9,7 +9,7 @@ import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 
 class Main {
 	public static void main(String[] args) {
-		FingGreedy problem = new FingGreedy(
+	    Cost problem = new Cost(
 				195 /* variables,  V + |R| = ?   */, 
 				43  /* vehicles,  V = 43|R|/152 */
 		);
@@ -24,7 +24,7 @@ class Main {
 		List<String> rowBoth = new ArrayList<String>();
 		// tiempo de inicio
 		long startTime = System.currentTimeMillis();
-		PermutationSolution<Integer> sol = problem.costSolution();
+		PermutationSolution<Integer> sol = problem.solution();
 		// tiempo de fin
 	    long endTime = System.currentTimeMillis();
 	    long durationMillis = endTime - startTime; // tiempo en milisegundos
@@ -40,53 +40,6 @@ class Main {
 		rowCost.add(String.valueOf(sol.getObjective(0)));
 		rowCost.add(String.valueOf(sol.getObjective(1)));
 		rows.add(rowCost);
-		// tiempo de inicio
-		startTime = System.currentTimeMillis();
-		sol = problem.timeSolution();
-		// tiempo de fin
-	    endTime = System.currentTimeMillis();
-	    durationMillis = endTime - startTime; // tiempo en milisegundos
-	    durationSeconds = durationMillis / 1000.0; // tiempo en segundos
-		System.out.println("Soluciones finales, Greedy Time:");
-		System.out.println(sol.getVariables());
-		System.out.println("Costo = " + sol.getObjective(0));
-		System.out.println("Tiempo = " + sol.getObjective(1));
-		System.out.println("-------------------");
-		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
-		System.out.println("-------------------");
-		rowTime.add("Greedy Time");
-		rowTime.add(String.valueOf(sol.getObjective(0)));
-		rowTime.add(String.valueOf(sol.getObjective(1)));
-		rows.add(rowTime);
-		// tiempo de inicio
-		startTime = System.currentTimeMillis();
-		sol = problem.compromiseSolution();
-		// tiempo de fin
-	    endTime = System.currentTimeMillis();
-	    durationMillis = endTime - startTime; // tiempo en milisegundos
-	    durationSeconds = durationMillis / 1000.0; // tiempo en segundos
-		System.out.println("Soluciones finales, Greedy Compromise:");
-		System.out.println(sol.getVariables());
-		System.out.println("Costo = " + sol.getObjective(0));
-		System.out.println("Tiempo = " + sol.getObjective(1));
-		System.out.println("-------------------");
-		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
-		System.out.println("-------------------");
-		rowBoth.add("Greedy Compromise");
-		rowBoth.add(String.valueOf(sol.getObjective(0)));
-		rowBoth.add(String.valueOf(sol.getObjective(1)));
-		rows.add(rowBoth);
 		ExportCSV.export("greedys", headers, rows);
-		/*
-		System.out.println("Distances  es : " + problem.distancesRowLength() + " x " + problem.distancesColumnLength());
-		System.out.println("Distances[0]  : " + Arrays.toString(problem.distancesRow(1)));
-		System.out.println("Times      es : " + problem.timesRowLength() + " x " + problem.timesColumnLength());
-		System.out.println("Times[0]      : " + Arrays.toString(problem.timesRow(1)));
-		System.out.println("Pendientes es : " + problem.pendingLength());
-		System.out.println("-------------------");
-		for (int i = 0; i < problem.getAssignments().size(); i++) {
-			System.out.println("Vehiculo " + i + " -> " + problem.getAssignments().get(i));
-		}
-		*/
 	}
 }

@@ -37,7 +37,7 @@ public class MatrixLoader {
 		if (id == 0) {
 			return 0; // es el Centro de distribucion
 		}
-		if (id-vehicles > 155 || id-vehicles < 0) {
+		if (id-vehicles > 152 || id-vehicles < 0) {
 			throw new RuntimeException("El id no esta en el rango de la matriz: " + id + ", " + vehicles);
 		}
 		/*

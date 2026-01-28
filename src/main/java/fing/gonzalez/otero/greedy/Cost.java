@@ -3,6 +3,7 @@ package fing.gonzalez.otero.greedy;
 import fing.gonzalez.otero.utils.MatrixLoader;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,14 +20,14 @@ class Cost {
     private int numberOfVehicles;
     private List<List<Integer>> routes;
     private int [] whichRoute;
+    List<Pair<Double, Pair<Integer, Integer>>> savings;
     
     public Cost (int variables, int vehicles) {
         numberOfVariables = variables;
         numberOfVehicles = vehicles;
-        for (int i = 0; i <= variables; i++) {
-            whichRoute[i] = i;
-        }
+        whichRoute = new int[variables];
         routes = new ArrayList<>();
+        savings = new ArrayList<>();
         try {
             distances = MatrixLoader.load("data/distances_c.csv");
             times = MatrixLoader.load("data/times_c.csv");
@@ -65,60 +66,25 @@ class Cost {
         return times[row];
     }
 
-    public PermutationSolution<Integer> costSolution() {
+    public PermutationSolution<Integer> solution() {
         clean();
         IntegerPermutationSolution solution =
                 new IntegerPermutationSolution(numberOfVariables, 2);
         boolean keepGoing = true;
         /* sigue idea de algoritmo de Clark & Wright (Savings) */
         /* inicializar rutas CD -> r -> CD, para cada r */
-        Integer receptor_id = 1;
+        Integer receptor_id = numberOfVehicles;
         for (List<Integer> route: routes) {
             route.add(receptor_id);
             receptor_id++;
         }
-        /* lista para guardar que rutas y cuanta ahorraria su union, ordenada descendentemente */
-        List<Pair<Double, Pair<Integer, Integer>>> savings = new ArrayList<>(); // <saves,<i,j>>
-        Double saves;
-        Integer i = 0, j = 0;
         int position;
         /* Hacer uniones de rutas para reducir costos hasta que no se pueda mas */
         while (keepGoing) {
-            keepGoing = false;
-            // ver si hay rutas para unir, en ese caso unirlas y dalre a keepGoing
             // calcular savings
-            for (List<Integer> route_i: routes) {
-                for (List<Integer> route_j: routes) {
-                    if (route_i.getFirst() != route_j.getFirst()) {
-                        saves = obtainCost(route_i.getLast(), 0) + obtainCost(0, route_j.getFirst()) - obtainCost(route_i.getLast(), route_j.getFirst()); // d(i,CD) + d(CD,j) - d(i,j)
-                        // guardar saves en orden
-                        position = 0;
-                        while (!savings.isEmpty() && saves < savings.get(position).getLeft()) {
-                            position++;
-                        }
-                        savings.add(position, Pair.of(saves, Pair.of(i,j)));
-                    }
-                    j++;
-                }
-                i++;
-                j=0;
-            }
+            calculateSavings();
             // hacer uniones, si se hace alguna volver keepGoing true
-            for (Pair<Double, Pair<Integer, Integer>> couldSave: savings) {
-                // ver que no esten ya en la misma ruta
-                // ver que aun este disponible esa ruta para hacer el merge
-                // ver que no se sobre pase la capacidad de un vehiculo en la ruta
-                i = couldSave.getRight().getLeft();
-                j = couldSave.getRight().getRight();
-                List<Integer> route_i = routes.get(whichRoute[i]);
-                List<Integer> route_j = routes.get(whichRoute[j]);
-                if (whichRoute[i] != whichRoute[j] && route_i.getLast() == i && route_j.getFirst() == j && (routeWeight(route_i) + routeWeight(route_j)) < 1) {
-                    // se fusionan rutas
-                    // actualizar whichRoute de los receptores de la ruta j
-                    // actualizar la ruta i
-                    // deshabilitar la ruta j
-                }
-            }
+            keepGoing = mergeRoutesThatSaveTheMost();
         }
         position = 0;
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
@@ -126,9 +92,11 @@ class Cost {
             solution.setVariable(position, vehicleId);
             position++;
             // agrega los receptores del vehiculo
-            for (Integer id : routes.get(vehicleId)) {
-                solution.setVariable(position, id + numberOfVehicles);
-                position++;
+            if (vehicleId < routes.size()) {
+                for (Integer id : routes.get(vehicleId)) {
+                    solution.setVariable(position, id);
+                    position++;
+                }
             }
         }
         evaluate(solution);
@@ -136,6 +104,75 @@ class Cost {
     }
 
     /* Auxiliares */
+    private void calculateSavings() {
+        Double saves;
+        savings.clear();
+        // ver si hay rutas para unir, en ese caso unirlas y dalre a keepGoing
+        // calcular savings
+        for (List<Integer> route_i: routes) {
+            for (List<Integer> route_j: routes) {
+                if (route_i.getFirst() != route_j.getFirst()) {
+                    saves = obtainCost(route_i.getLast(), 0) + obtainCost(0, route_j.getFirst()) - obtainCost(route_i.getLast(), route_j.getFirst()); // d(i,CD) + d(CD,j) - d(i,j)
+                    savings.add(Pair.of(saves, Pair.of(route_i.getLast(),route_j.getFirst())));
+                }
+            }
+        }
+        // ordenar los savings
+        savings.sort(
+                Comparator
+                    // save descendiente
+                    .comparingDouble(
+                        (Pair<Double, Pair<Integer, Integer>> p) -> p.getLeft()
+                    ).reversed()
+                    // empate => i ascendente
+                    .thenComparingInt(
+                        p -> p.getRight().getLeft()
+                    )
+                    // empate => j ascendente
+                    .thenComparingInt(
+                        p -> p.getRight().getRight()
+                    ));
+    }
+    
+    private boolean mergeRoutesThatSaveTheMost() {
+        Integer i,j;
+        int deletedRoute;
+        for (Pair<Double, Pair<Integer, Integer>> couldSave: savings) {
+            // ver que no esten ya en la misma ruta
+            // ver que aun este disponible esa ruta para hacer el merge
+            // ver que no se sobre pase la capacidad de un vehiculo en la ruta
+            i = couldSave.getRight().getLeft();
+            j = couldSave.getRight().getRight();
+            List<Integer> route_i = routes.get(whichRoute[i]);
+            List<Integer> route_j = routes.get(whichRoute[j]);
+            if (whichRoute[i] != whichRoute[j] && route_i.getLast() == i && route_j.getFirst() == j && (routeWeight(route_i) + routeWeight(route_j)) <= 1) {
+                deletedRoute = whichRoute[j];
+                // se fusionan rutas en la ruta i
+                for (Integer receptor: route_j) {
+                    route_i.addLast(receptor);
+                }
+                // actualizar whichRoute de los receptores en j
+                for (int pos = numberOfVehicles; pos < numberOfVariables; pos++) {
+                    if (whichRoute[pos] == deletedRoute) {
+                        whichRoute[pos] = whichRoute[i];
+                    }
+                }
+                // borrar ruta j
+                routes.remove(deletedRoute);
+                // actualizar whichRoute de los receptores
+                for (int pos = numberOfVehicles; pos < numberOfVariables; pos++) {
+                    if (whichRoute[pos] > deletedRoute) {
+                        whichRoute[pos] = whichRoute[pos]-1;
+                    }
+                }
+                // hubo fusion de rutas entonces se precisa otra pasada
+                return true;
+            }
+        }
+        // se termino
+        return false;
+    }
+    
     private double routeWeight(List<Integer> route) {
         double totalWeight = 0;
         for (Integer id: route) {
@@ -147,8 +184,15 @@ class Cost {
     /* para limpiar solucion vieja */
     private void clean() {
         routes.clear();
-        for (int v = 0; v < numberOfVariables; v++) {
+        for (int v = 0; v < numberOfVariables-numberOfVehicles; v++) {
             routes.add(new ArrayList<>());
+        }
+        for (int i = 0; i < numberOfVariables; i++) {
+            if (i < numberOfVehicles) {
+                whichRoute[i] = -1;
+            } else {
+                whichRoute[i] = i-numberOfVehicles;
+            }
         }
     }
     
@@ -161,7 +205,6 @@ class Cost {
         int fromNode = 0;
         double accumulatedTime = 0.0;
         int vehicleCapacity = 100;
-        Pair<Double, Double> values;
         for (int i = 1; i < solution.getLength(); i++) {
             /* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
             int thisNode = solution.getVariable(i);
