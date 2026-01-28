@@ -5,6 +5,7 @@ import fing.gonzalez.otero.utils.MatrixLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSolution;
 
@@ -68,9 +69,12 @@ class Time {
         /* sigue idea de algoritmo de Clark & Wright (Savings) */
         /* inicializar rutas CD -> r -> CD, para cada r */
         int position;
-        /* Hacer uniones de rutas para reducir costos hasta que no se pueda mas */
-        while (keepGoing) {
-            keepGoing = false;
+        Pair<Integer, Integer> bestOption; // ruta, receptor
+        for (int receptor = numberOfVehicles; receptor < numberOfVariables; receptor++) {
+            // calcular los deltas
+            bestOption = calculateBestOption();
+            // realizar la mejor opcion
+            addToRoute(bestOption.getLeft(), bestOption.getRight());
         }
         position = 0;
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
@@ -90,6 +94,18 @@ class Time {
     }
 
     /* Auxiliares */
+    private Pair<Integer, Integer> calculateBestOption(){
+        // buscar la mejor opcion de entre las rutas existentes o crear una nueva, maxima cantidad de rutas = numberOfVehicles
+        return Pair.of(1,1);
+    }
+    
+    private void addToRoute(int routePosition, int receptorId) {
+        if (routes.size() >= routePosition) {
+            throw new RuntimeException("No hay una ruta en la posicion: " + routePosition + ", receptor id: " + receptorId);
+        }
+        routes.get(routePosition).addLast(receptorId);
+    }
+    
     private double routeWeight(List<Integer> route) {
         double totalWeight = 0;
         for (Integer id: route) {
