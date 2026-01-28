@@ -107,7 +107,6 @@ class Cost {
     private void calculateSavings() {
         Double saves;
         savings.clear();
-        // ver si hay rutas para unir, en ese caso unirlas y dalre a keepGoing
         // calcular savings
         for (List<Integer> route_i: routes) {
             for (List<Integer> route_j: routes) {
