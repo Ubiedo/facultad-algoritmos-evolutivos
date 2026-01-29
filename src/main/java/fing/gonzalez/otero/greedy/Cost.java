@@ -146,7 +146,7 @@ class Cost {
             j = couldSave.getRight().getRight();
             List<Integer> route_i = routes.get(whichRoute[i]);
             List<Integer> route_j = routes.get(whichRoute[j]);
-            if (whichRoute[i] != whichRoute[j] && route_i.getLast() == i && route_j.getFirst() == j && (routeWeight(route_i) + routeWeight(route_j)) <= 1) {
+            if (whichRoute[i] != whichRoute[j] && route_i.getLast() == i && route_j.getFirst() == j && (routeWeight(route_i) + routeWeight(route_j)) <= 100) {
                 deletedRoute = whichRoute[j];
                 // se fusionan rutas en la ruta i
                 for (Integer receptor: route_j) {
@@ -179,7 +179,7 @@ class Cost {
         for (Integer id: route) {
             totalWeight += weight(id);
         }
-        return totalWeight/100;
+        return totalWeight;
     }
     
     /* para limpiar solucion vieja */
@@ -256,12 +256,12 @@ class Cost {
     
     public int urgency(int id) {
         if (id < 47) {
-            return 3;
+            return 7;
         }
         if (id < 113) {
             return 5;
         }
-        return 7;
+        return 3;
     }
     
     public int weight(int id) {
