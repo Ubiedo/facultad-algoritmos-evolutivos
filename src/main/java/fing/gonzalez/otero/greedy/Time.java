@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSolution;
 
@@ -19,7 +20,7 @@ class Time {
     private int numberOfVariables;
     private int numberOfVehicles;
     private List<List<Integer>> routes;
-    private List<Pair<Double, Integer>> logs;
+    private List<Triple<Double, Integer, Integer>> logs;
     
     public Time (int variables, int vehicles) {
         numberOfVariables = variables;
@@ -81,41 +82,25 @@ class Time {
                 low.add(receptorId);
             }
         }
+        // ordenados por tiempo al CD
         high.sort(Comparator.comparingDouble(r -> obtainTime(0, r)));
         mid.sort(Comparator.comparingDouble(r -> obtainTime(0, r)));
         low.sort(Comparator.comparingDouble(r -> obtainTime(0, r)));
         /* establecer los cabeza de ruta */
-        if (numberOfVehicles > high.size()) {
-            for (int i = 0; i < high.size(); i++) {
+        for (int i = 0; i < numberOfVehicles; i++) {
+            if (high.size() > 0) {
                 routes.get(i).add(high.remove(0));
-            }
-            if (numberOfVehicles > high.size() + mid.size()) {
-                for (int i = high.size(); i < mid.size(); i++) {
-                    routes.get(i).add(mid.remove(0));
-                }
-                if (numberOfVehicles > high.size() + mid.size() + low.size()) {
-                    for (int i = high.size() + mid.size(); i < low.size(); i++) {
-                        routes.get(i).add(low.remove(0));
-                    }
-                } else {
-                    for (int i = high.size() + mid.size(); i < numberOfVehicles; i++) {
-                        routes.get(i).add(low.remove(0));
-                    }
-                }
-            } else {
-                for (int i = high.size(); i < numberOfVehicles; i++) {
-                    routes.get(i).add(mid.remove(0));
-                }
-            }
-        } else {
-            for (int i = 0; i < numberOfVehicles; i++) {
-                routes.get(i).add(high.remove(0));
+            } else if (mid.size() > 0) {
+                routes.get(i).add(mid.remove(0));
+            } else if (low.size() > 0) {
+                routes.get(i).add(low.remove(0));
             }
         }
         int position, receptor;
         Pair<Double, Integer> best = null, found;
         List<Integer> route = null;
         while (high.size() + mid.size() + low.size() > 0) {
+            // tomar un receptor
             if (high.size() > 0) {
                 receptor = high.remove(0);
             } else if (mid.size() > 0) {
@@ -132,7 +117,7 @@ class Time {
                 }
             }
             if (best == null) {
-                throw new RuntimeException("best dio null");
+                throw new RuntimeException("best = null");
             }
             // agregar el receptor en la posicion encontrada de la ruta obtenida
             if (route == null) {
@@ -140,36 +125,58 @@ class Time {
             }
             route.add(best.getRight(), receptor);
             // guardo el log de que accion se realiza
-            logs.addLast(best);
+            logs.addLast(Triple.of(best.getLeft(), best.getRight(), receptor));
             route = null;
             best = null;
         }
         // imprimo los logs
-        System.out.println("-------------------");
-        System.out.println("Logs:");
-        for (Pair<Double, Integer> log: logs) {
-            System.out.print("| " + log.getLeft() + ", " + log.getRight() + " |");
+        System.out.println(">logs--------------");
+        for (Triple<Double, Integer, Integer> log: logs) {
+            System.out.print("| " + log.getLeft() + ", " + log.getMiddle() + ", " + log.getRight() +" |");
         }
         System.out.println();
-        System.out.println("-------------------");
+        int elementsInRoutes = numberOfVehicles;
+        for (List<Integer> r: routes) {
+            elementsInRoutes += r.size();
+        }
+        System.out.println(elementsInRoutes - numberOfVariables);
         position = 0;
+        System.out.println(">routes------------");
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
             // agrega el vehiculo
             solution.setVariable(position, vehicleId);
             position++;
             // agrega los receptores del vehiculo
             if (vehicleId < routes.size()) {
+                System.out.println(routes.get(vehicleId));
+                System.out.println(duplicateInList(routes.get(vehicleId)));
                 for (Integer id : routes.get(vehicleId)) {
                     solution.setVariable(position, id);
                     position++;
                 }
             }
         }
+        System.out.println("------------routes<");
         evaluate(solution);
+        System.out.println(solution.getVariables());
+        System.out.println(duplicateInList(solution.getVariables()));
+        System.out.println("--------------logs<");
         return solution;
     }
 
     /* Auxiliares */
+    private String duplicateInList(List<Integer> solution) {
+        boolean [] indexs = new boolean[numberOfVariables];
+        for (int i = 0; i < solution.size(); i++) {
+            indexs[i] = false;
+        }
+        for (Integer index: solution) {
+            if (indexs[index]) return "\u001B[33m" + "Hay duplicados!" + "\u001B[0m";
+            indexs[index] = true;
+        }
+        return "\u001B[36m" + "Sin duplicados." + "\u001B[0m";
+    }
+    
     private Pair<Double, Integer> calculateDeltaAndBestPosition(int receptor, List<Integer> route){
         // devuelve el delta minimo, y al posicion dentro de la ruta donde sucede
         // donde delta = tiempo_ponderado_nuevo - tiempo_ponderado_viejo
@@ -204,7 +211,7 @@ class Time {
     private double routeWeight(List<Integer> route) {
         double totalWeight = 0;
         for (Integer id: route) {
-            totalWeight += weight(id);
+            totalWeight += weight(MatrixLoader.toIndex(id, numberOfVehicles));
         }
         return totalWeight;
     }
@@ -237,15 +244,15 @@ class Time {
                 vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
-                if (vehicleCapacity >= weight(thisNode)) {
-                    vehicleCapacity -= weight(thisNode);
+                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles))) {
+                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
                 } else {
                     // agregar coste de volver al centro de distribucion
                     cost += obtainCost(fromNode, 0);
                     accumulatedTime += obtainTime(fromNode, 0);
                     fromNode = 0;
                     // resetear capacidad
-                    vehicleCapacity = 100 - weight(thisNode);
+                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
                 }
                 cost += obtainCost(fromNode, thisNode);
                 accumulatedTime += obtainTime(fromNode, thisNode);

@@ -197,6 +197,7 @@ class Cost {
         return totalCost;
     }
     
+    // capaz que hay que agregarle MatrixLoader.toIndex dentro del llamado al peso
     private double routeWeight(List<Integer> route) {
         double totalWeight = 0;
         for (Integer id: route) {
@@ -239,15 +240,15 @@ class Cost {
                 vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
-                if (vehicleCapacity >= weight(thisNode)) {
-                    vehicleCapacity -= weight(thisNode);
+                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles))) {
+                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
                 } else {
                     // agregar coste de volver al centro de distribucion
                     cost += obtainCost(fromNode, 0);
                     accumulatedTime += obtainTime(fromNode, 0);
                     fromNode = 0;
                     // resetear capacidad
-                    vehicleCapacity = 100 - weight(thisNode);
+                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
                 }
                 cost += obtainCost(fromNode, thisNode);
                 accumulatedTime += obtainTime(fromNode, thisNode);
