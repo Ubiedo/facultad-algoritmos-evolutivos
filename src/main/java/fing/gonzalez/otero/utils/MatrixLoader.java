@@ -46,7 +46,7 @@ public class MatrixLoader {
 			index++;
 		}
 		*/
-		return id - vehicles;
+		return id - vehicles + 1;
 	}
 	
 	public static int fromIndex(int index, int vehicles) {

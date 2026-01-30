@@ -174,6 +174,29 @@ class Cost {
         return false;
     }
     
+    private double routeTime(List<Integer> route) {
+        double totalTime = 0;
+        double acumulated = 0;
+        int p = 0;
+        for (Integer r: route) {
+            acumulated += obtainTime(p,r);
+            totalTime += acumulated*urgency(MatrixLoader.toIndex(r, numberOfVehicles));
+            p = r;
+        }
+        return totalTime;
+    }
+    
+    private double routeCost(List<Integer> route) {
+        double totalCost = 0;
+        int p = 0;
+        for (Integer r: route) {
+            totalCost += obtainCost(p,r);
+            p = r;
+        }
+        totalCost += obtainCost(p,0);
+        return totalCost;
+    }
+    
     private double routeWeight(List<Integer> route) {
         double totalWeight = 0;
         for (Integer id: route) {
@@ -213,6 +236,7 @@ class Cost {
                 cost += obtainCost(fromNode, 0);
                 fromNode = 0;
                 accumulatedTime = 0;
+                vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
                 if (vehicleCapacity >= weight(thisNode)) {
@@ -240,9 +264,7 @@ class Cost {
         if (from == to) {
             return 0.0;
         }
-        from = MatrixLoader.toIndex(from, numberOfVehicles);
-        to = MatrixLoader.toIndex(to, numberOfVehicles);
-        return distances[from][to]*(0.0104);
+        return distances[MatrixLoader.toIndex(from, numberOfVehicles)+1][MatrixLoader.toIndex(to, numberOfVehicles)]*(0.0104);
     }
     
     public double obtainTime(int from, int to) {
@@ -251,7 +273,7 @@ class Cost {
         }
         from = MatrixLoader.toIndex(from, numberOfVehicles);
         to = MatrixLoader.toIndex(to, numberOfVehicles);
-        return times[from][to];
+        return times[from+1][to];
     }
     
     public int urgency(int id) {

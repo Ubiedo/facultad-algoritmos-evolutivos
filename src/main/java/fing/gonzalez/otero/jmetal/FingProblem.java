@@ -108,12 +108,12 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	
 	public int urgency(int id) {
 		if (id < 47) {
-			return 3;
+			return 7;
 		}
 		if (id < 113) {
 			return 5;
 		}
-		return 7;
+		return 3;
 	}
 	
 	public int weight(int id) {

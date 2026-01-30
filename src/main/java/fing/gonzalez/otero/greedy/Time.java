@@ -19,11 +19,13 @@ class Time {
     private int numberOfVariables;
     private int numberOfVehicles;
     private List<List<Integer>> routes;
+    private List<Pair<Double, Integer>> logs;
     
     public Time (int variables, int vehicles) {
         numberOfVariables = variables;
         numberOfVehicles = vehicles;
         routes = new ArrayList<>();
+        logs = new ArrayList<>();
         try {
             distances = MatrixLoader.load("data/distances_c.csv");
             times = MatrixLoader.load("data/times_c.csv");
@@ -137,9 +139,19 @@ class Time {
                 throw new RuntimeException("no se le asigno ninguna ruta");
             }
             route.add(best.getRight(), receptor);
+            // guardo el log de que accion se realiza
+            logs.addLast(best);
             route = null;
             best = null;
         }
+        // imprimo los logs
+        System.out.println("-------------------");
+        System.out.println("Logs:");
+        for (Pair<Double, Integer> log: logs) {
+            System.out.print("| " + log.getLeft() + ", " + log.getRight() + " |");
+        }
+        System.out.println();
+        System.out.println("-------------------");
         position = 0;
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
             // agrega el vehiculo
@@ -200,6 +212,7 @@ class Time {
     /* para limpiar solucion vieja */
     private void clean() {
         routes.clear();
+        logs.clear();
         for (int vehicle = 0; vehicle < numberOfVehicles; vehicle++) {
             routes.add(new ArrayList<>());
         }
@@ -221,6 +234,7 @@ class Time {
                 cost += obtainCost(fromNode, 0);
                 fromNode = 0;
                 accumulatedTime = 0;
+                vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
                 if (vehicleCapacity >= weight(thisNode)) {
@@ -250,7 +264,7 @@ class Time {
         }
         from = MatrixLoader.toIndex(from, numberOfVehicles);
         to = MatrixLoader.toIndex(to, numberOfVehicles);
-        return distances[from][to]*(0.0104);
+        return distances[from+1][to]*(0.0104);
     }
     
     public double obtainTime(int from, int to) {
@@ -259,7 +273,7 @@ class Time {
         }
         from = MatrixLoader.toIndex(from, numberOfVehicles);
         to = MatrixLoader.toIndex(to, numberOfVehicles);
-        return times[from][to];
+        return times[from+1][to];
     }
     
     public int urgency(int id) {
