@@ -73,7 +73,7 @@ class Time {
         List<Integer> high = new ArrayList<>();
         List<Integer> mid = new ArrayList<>();
         List<Integer> low = new ArrayList<>();
-        for (int receptorId = numberOfVehicles; receptorId < numberOfVariables - numberOfVehicles; receptorId++) {
+        for (int receptorId = numberOfVehicles; receptorId < numberOfVariables; receptorId++) {
             if (urgency(MatrixLoader.toIndex(receptorId, numberOfVehicles)) == 7) {
                 high.add(receptorId);
             } else if (urgency(MatrixLoader.toIndex(receptorId, numberOfVehicles)) == 5) {
@@ -129,38 +129,24 @@ class Time {
             route = null;
             best = null;
         }
-        // imprimo los logs
-        System.out.println(">logs--------------");
-        for (Triple<Double, Integer, Integer> log: logs) {
-            System.out.print("| " + log.getLeft() + ", " + log.getMiddle() + ", " + log.getRight() +" |");
-        }
-        System.out.println();
         int elementsInRoutes = numberOfVehicles;
         for (List<Integer> r: routes) {
             elementsInRoutes += r.size();
         }
-        System.out.println(elementsInRoutes - numberOfVariables);
         position = 0;
-        System.out.println(">routes------------");
         for (int vehicleId = 0; vehicleId < numberOfVehicles; vehicleId++) {
             // agrega el vehiculo
             solution.setVariable(position, vehicleId);
             position++;
             // agrega los receptores del vehiculo
             if (vehicleId < routes.size()) {
-                System.out.println(routes.get(vehicleId));
-                System.out.println(duplicateInList(routes.get(vehicleId)));
                 for (Integer id : routes.get(vehicleId)) {
                     solution.setVariable(position, id);
                     position++;
                 }
             }
         }
-        System.out.println("------------routes<");
         evaluate(solution);
-        System.out.println(solution.getVariables());
-        System.out.println(duplicateInList(solution.getVariables()));
-        System.out.println("--------------logs<");
         return solution;
     }
 
@@ -178,7 +164,7 @@ class Time {
     }
     
     private Pair<Double, Integer> calculateDeltaAndBestPosition(int receptor, List<Integer> route){
-        // devuelve el delta minimo, y al posicion dentro de la ruta donde sucede
+        // devuelve el delta minimo, y la posicion dentro de la ruta donde sucede
         // donde delta = tiempo_ponderado_nuevo - tiempo_ponderado_viejo
         if (weight(MatrixLoader.toIndex(receptor, numberOfVehicles)) + routeWeight(route) > 100) return null;
         Pair<Double, Integer> result = Pair.of(Double.MAX_VALUE, 0);

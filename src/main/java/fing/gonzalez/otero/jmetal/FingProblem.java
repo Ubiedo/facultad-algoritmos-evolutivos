@@ -50,43 +50,43 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	/* Others */
 	@Override
 	public void evaluate(PermutationSolution<Integer> solution) {
-		/* gCosto = ∑c(vi) (2.1) */
-		double cost = 0.0;
-		/* gTiempo = ∑(t(r)* u(r))/|R| */
-		double time = 0.0;
-		int fromNode = 0;
-		double accumulatedTime = 0.0;
-		int vehicleCapacity = 100;
-		Pair<Double, Double> values;
-		for (int i = 1; i < solution.getLength(); i++) {
-			/* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
-			int thisNode = solution.getVariable(i);
-			if (thisNode < getNumberOfVehicles()) {
-				cost += obtainCost(fromNode, 0);
-				fromNode = 0;
-				accumulatedTime = 0;
-			} else {
-				// chequear que tenga espacio para enviarle a ese receptor
-				if (vehicleCapacity >= weight(thisNode)) {
-					vehicleCapacity -= weight(thisNode);
-				} else {
-					// agregar coste de volver al centro de distribucion
-					cost += obtainCost(fromNode, 0);
-					accumulatedTime += obtainTime(fromNode, 0);
-					fromNode = 0;
-					// resetear capacidad
-					vehicleCapacity = 100 - weight(thisNode);
-				}
-				cost += obtainCost(fromNode, thisNode);
-				accumulatedTime += obtainTime(fromNode, thisNode);
-				time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, getNumberOfVehicles()));
-				fromNode = thisNode;
-			}
-		}
-		time = time / (getNumberOfVariables() - getNumberOfVehicles());
-		solution.setObjective(0, cost); // pesos, gasto de combustible
-		solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
-	}
+        /* gCosto = ∑c(vi) (2.1) */
+        double cost = 0.0;
+        /* gTiempo = ∑(t(r)* u(r))/|R| */
+        double time = 0.0;
+        int fromNode = 0;
+        double accumulatedTime = 0.0;
+        int vehicleCapacity = 100;
+        for (int i = 1; i < solution.getLength(); i++) {
+            /* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
+            int thisNode = solution.getVariable(i);
+            if (thisNode < numberOfVehicles) {
+                cost += obtainCost(fromNode, 0);
+                fromNode = 0;
+                accumulatedTime = 0;
+                vehicleCapacity = 100;
+            } else {
+                // chequear que tenga espacio para enviarle a ese receptor
+                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles))) {
+                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                } else {
+                    // agregar coste de volver al centro de distribucion
+                    cost += obtainCost(fromNode, 0);
+                    accumulatedTime += obtainTime(fromNode, 0);
+                    fromNode = 0;
+                    // resetear capacidad
+                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                }
+                cost += obtainCost(fromNode, thisNode);
+                accumulatedTime += obtainTime(fromNode, thisNode);
+                time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                fromNode = thisNode;
+            }
+        }
+        time = time / (getNumberOfVariables() - numberOfVehicles);
+        solution.setObjective(0, cost); // pesos, gasto de combustible
+        solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
+    }
 	
 	public double obtainCost(int from, int to) {
 		if (from == to) {
@@ -94,7 +94,7 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		}
 		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
 		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
-		return distances[from][to]*(0.0104);
+		return distances[from+1][to]*(0.0104);
 	}
 	
 	public double obtainTime(int from, int to) {
@@ -103,7 +103,7 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		}
 		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
 		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
-		return times[from][to];
+		return times[from+1][to];
 	}
 	
 	public int urgency(int id) {

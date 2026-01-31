@@ -17,6 +17,10 @@ class Main {
                 195 /* variables,  V + |R| = ?   */, 
                 43  /* vehicles,  V = 43|R|/152 */
         );
+        Compromise greedyCompromise = new Compromise(
+                195 /* variables,  V + |R| = ?   */, 
+                43  /* vehicles,  V = 43|R|/152 */
+        );
 		// para exportar resultados
 		List<String> headers = new ArrayList<String>();
 		headers.add("algoritmo");
@@ -33,10 +37,10 @@ class Main {
 	    long endTime = System.currentTimeMillis();
 	    long durationMillis = endTime - startTime; // tiempo en milisegundos
 	    double durationSeconds = durationMillis / 1000.0; // tiempo en segundos
-		System.out.println("Soluciones finales, Greedy Cost:");
+		System.out.println("Soluciones finales, \u001B[33mGreedy Cost\u001B[0m:");
 		System.out.println(sol.getVariables());
-		System.out.println("Costo = " + sol.getObjective(0));
-		System.out.println("Tiempo = " + sol.getObjective(1));
+		System.out.println("\u001B[33mCosto = " + sol.getObjective(0) + "\u001B[0m");
+		System.out.println("\u001B[33mTiempo = " + sol.getObjective(1) + "\u001B[0m");
 		System.out.println("-------------------");
 		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
 		System.out.println("-------------------");
@@ -51,17 +55,35 @@ class Main {
         endTime = System.currentTimeMillis();
         durationMillis = endTime - startTime; // tiempo en milisegundos
         durationSeconds = durationMillis / 1000.0; // tiempo en segundos
-        System.out.println("Soluciones finales, Greedy Time:");
+        System.out.println("Soluciones finales, \u001B[33mGreedy Time\u001B[0m:");
         System.out.println(sol.getVariables());
-        System.out.println("Costo = " + sol.getObjective(0));
-        System.out.println("Tiempo = " + sol.getObjective(1));
+        System.out.println("\u001B[33mCosto = " + sol.getObjective(0) + "\u001B[0m");
+        System.out.println("\u001B[33mTiempo = " + sol.getObjective(1) + "\u001B[0m");
         System.out.println("-------------------");
         System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
         System.out.println("-------------------");
-        rowCost.add("Greedy Time");
-        rowCost.add(String.valueOf(sol.getObjective(0)));
-        rowCost.add(String.valueOf(sol.getObjective(1)));
-        rows.add(rowCost);
+        rowTime.add("Greedy Time");
+        rowTime.add(String.valueOf(sol.getObjective(0)));
+        rowTime.add(String.valueOf(sol.getObjective(1)));
+        rows.add(rowTime);
+        // tiempo de inicio
+        startTime = System.currentTimeMillis();
+        sol = greedyCompromise.solution();
+        // tiempo de fin
+        endTime = System.currentTimeMillis();
+        durationMillis = endTime - startTime; // tiempo en milisegundos
+        durationSeconds = durationMillis / 1000.0; // tiempo en segundos
+        System.out.println("Soluciones finales, \u001B[33mGreedy Time\u001B[0m:");
+        System.out.println(sol.getVariables());
+        System.out.println("\u001B[33mCosto = " + sol.getObjective(0) + "\u001B[0m");
+        System.out.println("\u001B[33mTiempo = " + sol.getObjective(1) + "\u001B[0m");
+        System.out.println("-------------------");
+        System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
+        System.out.println("-------------------");
+        rowBoth.add("Greedy Time");
+        rowBoth.add(String.valueOf(sol.getObjective(0)));
+        rowBoth.add(String.valueOf(sol.getObjective(1)));
+        rows.add(rowBoth);
 		ExportCSV.export("greedys", headers, rows);
 	}
 }

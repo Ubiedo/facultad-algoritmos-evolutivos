@@ -23,7 +23,7 @@ public class Main {
 		double crossoverProbability = 0.9;
 		double mutationProbability = 0.2;
 		int initialPopulation = 100;
-		int maxGenerations = 100000;
+		int maxGenerations = 1000000;
 		FingCrossover crossover = new FingCrossover(crossoverProbability);
 		FingMutation mutation = new FingMutation(mutationProbability);
 		SelectionOperator<List<PermutationSolution<Integer>>,
@@ -48,8 +48,8 @@ public class Main {
 		System.out.println("Soluciones finales:");
 		for (PermutationSolution<Integer> sol : population) {
 			System.out.println(sol.getVariables());
-			System.out.println("Costo = " + sol.getObjective(0));
-			System.out.println("Tiempo = " + sol.getObjective(1));
+	        System.out.println("\u001B[33mCosto = " + sol.getObjective(0) + "\u001B[0m");
+	        System.out.println("\u001B[33mTiempo = " + sol.getObjective(1) + "\u001B[0m");
 			System.out.println("-------------------");
 		}
 		System.out.println("Tiempo de ejecución: " + durationSeconds + " segundos");
