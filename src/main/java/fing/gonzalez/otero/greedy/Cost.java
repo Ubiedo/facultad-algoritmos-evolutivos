@@ -5,6 +5,7 @@ import fing.gonzalez.otero.utils.MatrixLoader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
@@ -16,21 +17,21 @@ import org.uma.jmetal.solution.permutationsolution.impl.IntegerPermutationSoluti
 class Cost {
     private double [][] distances;
     private double [][] times;
-    private int numberOfVariables;
+    private int [] idsToUse;
     private int numberOfVehicles;
     private List<List<Integer>> routes;
     private int [] whichRoute;
     List<Pair<Double, Pair<Integer, Integer>>> savings;
     
-    public Cost (int variables, int vehicles) {
-        numberOfVariables = variables;
+    public Cost (int vehicles, int [] ids) {
+        idsToUse = ids;
         numberOfVehicles = vehicles;
-        whichRoute = new int[variables];
+        whichRoute = new int[idsToUse[idsToUse.length-1]+1];
         routes = new ArrayList<>();
         savings = new ArrayList<>();
         try {
-            distances = MatrixLoader.load("data/distances_c.csv");
-            times = MatrixLoader.load("data/times_c.csv");
+            distances = MatrixLoader.load("data/distances.csv");
+            times = MatrixLoader.load("data/times.csv");
         } catch (Exception e) {
             throw new RuntimeException("Error cargando matrices en greedy de compromiso", e);
         }
@@ -69,14 +70,14 @@ class Cost {
     public PermutationSolution<Integer> solution() {
         clean();
         IntegerPermutationSolution solution =
-                new IntegerPermutationSolution(numberOfVariables, 2);
+                new IntegerPermutationSolution(numberOfVehicles + idsToUse.length, 2);
         boolean keepGoing = true;
         /* sigue idea de algoritmo de Clark & Wright (Savings) */
         /* inicializar rutas CD -> r -> CD, para cada r */
-        Integer receptor_id = numberOfVehicles;
+        Integer idPos = 0;
         for (List<Integer> route: routes) {
-            route.add(receptor_id);
-            receptor_id++;
+            route.add(idsToUse[idPos]);
+            idPos++;
         }
         int position;
         /* Hacer uniones de rutas para reducir costos hasta que no se pueda mas */
@@ -153,7 +154,7 @@ class Cost {
                     route_i.addLast(receptor);
                 }
                 // actualizar whichRoute de los receptores en j
-                for (int pos = numberOfVehicles; pos < numberOfVariables; pos++) {
+                for (int pos = 0; pos <= idsToUse[idsToUse.length-1]; pos++) {
                     if (whichRoute[pos] == deletedRoute) {
                         whichRoute[pos] = whichRoute[i];
                     }
@@ -161,7 +162,7 @@ class Cost {
                 // borrar ruta j
                 routes.remove(deletedRoute);
                 // actualizar whichRoute de los receptores
-                for (int pos = numberOfVehicles; pos < numberOfVariables; pos++) {
+                for (int pos = 0; pos <= idsToUse[idsToUse.length-1]; pos++) {
                     if (whichRoute[pos] > deletedRoute) {
                         whichRoute[pos] = whichRoute[pos]-1;
                     }
@@ -180,7 +181,7 @@ class Cost {
         int p = 0;
         for (Integer r: route) {
             acumulated += obtainTime(p,r);
-            totalTime += acumulated*urgency(MatrixLoader.toIndex(r, numberOfVehicles));
+            totalTime += acumulated*urgency(MatrixLoader.toIndex(r));
             p = r;
         }
         return totalTime;
@@ -209,14 +210,16 @@ class Cost {
     /* para limpiar solucion vieja */
     private void clean() {
         routes.clear();
-        for (int v = 0; v < numberOfVariables-numberOfVehicles; v++) {
+        for (int v = 0; v < idsToUse.length; v++) {
             routes.add(new ArrayList<>());
         }
-        for (int i = 0; i < numberOfVariables; i++) {
-            if (i < numberOfVehicles) {
-                whichRoute[i] = -1;
+        int routeIndex = 0;
+        for (int i = 0; i <= idsToUse[idsToUse.length-1]; i++) {
+            if (Arrays.binarySearch(idsToUse, i) >= 0) {
+                whichRoute[i] = routeIndex;
+                routeIndex++;
             } else {
-                whichRoute[i] = i-numberOfVehicles;
+                whichRoute[i] = -1;
             }
         }
     }
@@ -224,39 +227,36 @@ class Cost {
     /* para evaluar soluciones, idem a FingProblem */
     public void evaluate(PermutationSolution<Integer> solution) {
         /* gCosto = ∑c(vi) (2.1) */
-        double cost = 0.0;
         /* gTiempo = ∑(t(r)* u(r))/|R| */
-        double time = 0.0;
-        int fromNode = 0;
-        double accumulatedTime = 0.0;
-        int vehicleCapacity = 100;
+        double cost = 0.0, time = 0.0, accumulatedTime = 0.0;
+        int fromNode = 0, vehicleCapacity = 100;
         for (int i = 1; i < solution.getLength(); i++) {
             /* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
             int thisNode = solution.getVariable(i);
-            if (thisNode < numberOfVehicles) {
+            if (thisNode <= 0) {
                 cost += obtainCost(fromNode, 0);
                 fromNode = 0;
                 accumulatedTime = 0;
                 vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
-                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles))) {
-                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode))) {
+                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode));
                 } else {
                     // agregar coste de volver al centro de distribucion
                     cost += obtainCost(fromNode, 0);
                     accumulatedTime += obtainTime(fromNode, 0);
                     fromNode = 0;
                     // resetear capacidad
-                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode));
                 }
                 cost += obtainCost(fromNode, thisNode);
                 accumulatedTime += obtainTime(fromNode, thisNode);
-                time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode));
                 fromNode = thisNode;
             }
         }
-        time = time / (numberOfVariables - numberOfVehicles);
+        time = time / (idsToUse.length);
         solution.setObjective(0, cost); // pesos, gasto de combustible
         solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
     }
@@ -265,33 +265,33 @@ class Cost {
         if (from == to) {
             return 0.0;
         }
-        return distances[MatrixLoader.toIndex(from, numberOfVehicles)+1][MatrixLoader.toIndex(to, numberOfVehicles)]*(0.0104);
+        return distances[MatrixLoader.toIndex(from)+1][MatrixLoader.toIndex(to)]*(0.0104);
     }
     
     public double obtainTime(int from, int to) {
         if (from == to) {
             return 0.0;
         }
-        from = MatrixLoader.toIndex(from, numberOfVehicles);
-        to = MatrixLoader.toIndex(to, numberOfVehicles);
+        from = MatrixLoader.toIndex(from);
+        to = MatrixLoader.toIndex(to);
         return times[from+1][to];
     }
     
-    public int urgency(int id) {
-        if (id < 47) {
+    public int urgency(int index) {
+        if (index < 47) {
             return 7;
         }
-        if (id < 113) {
+        if (index < 113) {
             return 5;
         }
         return 3;
     }
     
-    public int weight(int id) {
-        if (id < 47) {
+    public int weight(int index) {
+        if (index < 47) {
             return 15;
         }
-        if (id < 113) {
+        if (index < 113) {
             return 9;
         }
         return 4;

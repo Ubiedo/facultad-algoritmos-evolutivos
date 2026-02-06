@@ -9,6 +9,7 @@ import fing.gonzalez.otero.jmetal.FingCrossover;
 import fing.gonzalez.otero.jmetal.FingMutation;
 import fing.gonzalez.otero.jmetal.FingProblem;
 import fing.gonzalez.otero.utils.ExportCSV;
+import fing.gonzalez.otero.utils.MatrixLoader;
 
 import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
@@ -19,9 +20,8 @@ import java.util.List;
 public class Population {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				61 /* variables,  V + |R| = ?   */, 
 				13  /* vehicles,  V = 43|R|/152 */,
-				"r3"
+                MatrixLoader.idsSet(1) /* ids a usar */
 		);
 		int [] populationValues = {50, 100, 200};
 		int maxGenerations = 200000;

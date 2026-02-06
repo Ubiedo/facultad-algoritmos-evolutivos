@@ -4,6 +4,8 @@ import fing.gonzalez.otero.jmetal.FingCrossover;
 import fing.gonzalez.otero.jmetal.FingMutation;
 import fing.gonzalez.otero.jmetal.FingProblem;
 import fing.gonzalez.otero.utils.ExportCSV;
+import fing.gonzalez.otero.utils.MatrixLoader;
+
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.operator.selection.SelectionOperator;
@@ -16,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class Generations {
+public class Iterations {
 	private static PermutationSolution<Integer> minCostExtreme(
 			List<PermutationSolution<Integer>> front) {
 		double minCost = front.stream()
@@ -43,12 +45,11 @@ public class Generations {
 
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				61,   // variables
 				13,   // vehículos
-				"r3"
+                MatrixLoader.idsSet(1) /* ids a usar */
 		);
 		int populationSize = 100;
-		int maxGenerations = 10_000;
+		int maxIterations = 10_000;
 		int step = 10_000;
 		int maxLimit = 500_000;
 		double crossoverProbability = 0.9;
@@ -66,7 +67,7 @@ public class Generations {
 				"no_change_counter"
 		);
 		List<List<String>> records = new ArrayList<>();
-		while (maxGenerations <= maxLimit) {
+		while (maxIterations <= maxLimit) {
 			FingCrossover crossover = new FingCrossover(crossoverProbability);
 			FingMutation mutation = new FingMutation(mutationProbability);
 			SelectionOperator<List<PermutationSolution<Integer>>,
@@ -77,7 +78,7 @@ public class Generations {
 			Algorithm<List<PermutationSolution<Integer>>> algorithm =
 					new NSGAIIBuilder<>(problem, crossover, mutation, populationSize)
 							.setSelectionOperator(selection)
-							.setMaxEvaluations(maxGenerations)
+							.setMaxEvaluations(maxIterations)
 							.build();
 			algorithm.run();
 			List<PermutationSolution<Integer>> population = algorithm.getResult();
@@ -105,13 +106,13 @@ public class Generations {
 				noChangeCounter++;
 			}
 			System.out.println(
-					"Gen=" + maxGenerations +
+					"Gen=" + maxIterations +
 					" | BestMinCost=" + bestMinCost.getObjective(0) +
 					" | BestMinTime=" + bestMinTime.getObjective(1) +
 					" | NoChange=" + noChangeCounter
 			);
 			records.add(List.of(
-					String.valueOf(maxGenerations),
+					String.valueOf(maxIterations),
 					String.valueOf(bestMinCost.getObjective(0)),
 					String.valueOf(bestMinCost.getObjective(1)),
 					String.valueOf(bestMinTime.getObjective(1)),
@@ -125,7 +126,7 @@ public class Generations {
 				);
 				break;
 			}
-			maxGenerations += step;
+			maxIterations += step;
 		}
 		ExportCSV.export(
 				"generaciones/instancia3",

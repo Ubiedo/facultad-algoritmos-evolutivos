@@ -6,6 +6,7 @@ import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
 
 import fing.gonzalez.otero.utils.ExportCSV;
+import fing.gonzalez.otero.utils.MatrixLoader;
 
 import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.operator.selection.impl.BinaryTournamentSelection;
@@ -16,9 +17,8 @@ import java.util.List;
 public class Main {
 	public static void main(String[] args) {
 		FingProblem problem = new FingProblem(
-				195 /* variables,  V + |R| = ?   */, 
 				43  /* vehicles,  V = 43|R|/152 */,
-				"c"
+				MatrixLoader.idsSet(3) /* ids a usar */
 		);
 		double crossoverProbability = 0.9;
 		double mutationProbability = 0.2;

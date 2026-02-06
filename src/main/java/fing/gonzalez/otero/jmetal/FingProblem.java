@@ -17,16 +17,18 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	private int numberOfVehicles;
 	private double[][] distances;
 	private double[][] times;
+	private int [] idsToUse;
 	
-	public FingProblem (int variables, int vehicles, String instace) {
+	public FingProblem (int vehicles, int [] ids) {
 		setNumberOfConstraints(0);
-		setNumberOfVariables(variables);
+		setNumberOfVariables(ids.length + vehicles);
 		setNumberOfObjectives(2);
 		setNumberOfVehicles(vehicles);
 		setName("FingProblem");
+		setIdsToUse(ids);
 		try {
-			times = MatrixLoader.load("data/times_" + instace + ".csv");
-			distances = MatrixLoader.load("data/distances_" + instace + ".csv");
+			times = MatrixLoader.load("data/times.csv");
+			distances = MatrixLoader.load("data/distances.csv");
 		} catch (Exception e) {
 			throw new RuntimeException("Error cargando matrices", e);
 		}
@@ -35,6 +37,10 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	/* Setters */
 	public void setNumberOfVehicles(int vehicles) {
 		numberOfVehicles = vehicles;
+	}
+	
+	public void setIdsToUse(int [] ids) {
+	    idsToUse = ids;
 	}
 	
 	/* Getters */
@@ -47,43 +53,44 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		return numberOfVehicles;
 	}
 	
+	public int [] getIdsToUse() {
+	    return idsToUse;
+	}
+	
 	/* Others */
 	@Override
 	public void evaluate(PermutationSolution<Integer> solution) {
         /* gCosto = ∑c(vi) (2.1) */
-        double cost = 0.0;
         /* gTiempo = ∑(t(r)* u(r))/|R| */
-        double time = 0.0;
-        int fromNode = 0;
-        double accumulatedTime = 0.0;
-        int vehicleCapacity = 100;
+        double cost = 0.0, time = 0.0, accumulatedTime = 0.0;
+        int fromNode = 0, vehicleCapacity = 100;
         for (int i = 1; i < solution.getLength(); i++) {
             /* chequear si i esta en el intervalo de enteros reservado para identificadores de vehiculos */
             int thisNode = solution.getVariable(i);
-            if (thisNode < numberOfVehicles) {
+            if (thisNode <= 0) {
                 cost += obtainCost(fromNode, 0);
                 fromNode = 0;
                 accumulatedTime = 0;
                 vehicleCapacity = 100;
             } else {
                 // chequear que tenga espacio para enviarle a ese receptor
-                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles))) {
-                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                if (vehicleCapacity >= weight(MatrixLoader.toIndex(thisNode))) {
+                    vehicleCapacity -= weight(MatrixLoader.toIndex(thisNode));
                 } else {
                     // agregar coste de volver al centro de distribucion
                     cost += obtainCost(fromNode, 0);
                     accumulatedTime += obtainTime(fromNode, 0);
                     fromNode = 0;
                     // resetear capacidad
-                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                    vehicleCapacity = 100 - weight(MatrixLoader.toIndex(thisNode));
                 }
                 cost += obtainCost(fromNode, thisNode);
                 accumulatedTime += obtainTime(fromNode, thisNode);
-                time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode, numberOfVehicles));
+                time += accumulatedTime*urgency(MatrixLoader.toIndex(thisNode));
                 fromNode = thisNode;
             }
         }
-        time = time / (getNumberOfVariables() - numberOfVehicles);
+        time = time / (idsToUse.length);
         solution.setObjective(0, cost); // pesos, gasto de combustible
         solution.setObjective(1, time); // segundos, tiempo medio de llegada al receptor
     }
@@ -92,8 +99,8 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		if (from == to) {
 			return 0.0;
 		}
-		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
-		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
+		from = MatrixLoader.toIndex(from);
+		to = MatrixLoader.toIndex(to);
 		return distances[from+1][to]*(0.0104);
 	}
 	
@@ -101,26 +108,26 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 		if (from == to) {
 			return 0.0;
 		}
-		from = MatrixLoader.toIndex(from, getNumberOfVehicles());
-		to = MatrixLoader.toIndex(to, getNumberOfVehicles());
+		from = MatrixLoader.toIndex(from);
+		to = MatrixLoader.toIndex(to);
 		return times[from+1][to];
 	}
 	
-	public int urgency(int id) {
-		if (id < 47) {
+	public int urgency(int index) {
+		if (index < 47) {
 			return 7;
 		}
-		if (id < 113) {
+		if (index < 113) {
 			return 5;
 		}
 		return 3;
 	}
 	
-	public int weight(int id) {
-		if (id < 47) {
+	public int weight(int index) {
+		if (index < 47) {
 			return 15;
 		}
-		if (id < 113) {
+		if (index < 113) {
 			return 9;
 		}
 		return 4;
@@ -130,14 +137,16 @@ public class FingProblem extends AbstractIntegerPermutationProblem {
 	@Override
 	public PermutationSolution<Integer> createSolution() {
 		List<Integer> perm = new ArrayList<>();
-		for (int i = 0; i < getNumberOfVariables(); i++) {
-			perm.add(i);
+		// agregamos los vehiculos
+		for (int i = 1; i < getNumberOfVehicles(); i++) {
+		    perm.add(-1*i);
 		}
-		Random rand = new Random();
-		int firstValue = rand.nextInt(getNumberOfVehicles());
-		perm.remove((Integer) firstValue);
+		// agregamos los receptores
+		for (int id : getIdsToUse()) {
+			perm.add(id);
+		}
 		Collections.shuffle(perm);
-		perm.add(0, firstValue);
+		perm.add(0, 0);
 		IntegerPermutationSolution solution =
 				new IntegerPermutationSolution(getNumberOfVariables(), getNumberOfObjectives());
 		for (int i = 0; i < getNumberOfVariables(); i++) {
